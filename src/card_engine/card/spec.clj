@@ -2,6 +2,8 @@
   (:require
    [clojure.spec.alpha :as s]))
 
+(def default-suits-order [:clubs :diamonds :hearts :spades])
+(def default-ranks-order [:ace :jack :queen :king 2 3 4 5 6 7 8 9 10])
 (def suits #{:hearts :diamonds :clubs :spades})
 (def ranks (into #{:ace :jack :queen :king} (range 2 11)))
 

@@ -19,6 +19,35 @@
       (is (= :ace (card/rank card)))
       (is (= :spades (card/suit card))))))
 
+(deftest card-comparison-tests
+  (testing "card default suit comparisions are correct"
+    (is (zero? (card/suit-comparator :spades :spades)))
+    (is (neg? (card/suit-comparator :hearts :spades)))
+    (is (pos? (card/suit-comparator :spades :hearts))))
+  (testing "card default rank comparisons are correct"
+    (is (zero? (card/rank-comparator :ace :ace)))
+    (is (zero? (card/rank-comparator :king :king)))
+    (is (zero? (card/rank-comparator 10 10)))
+    (is (neg? (card/rank-comparator :ace :king)))
+    (is (neg? (card/rank-comparator :jack :queen)))
+    (is (neg? (card/rank-comparator 9 10)))
+    (is (pos? (card/rank-comparator :king :ace)))
+    (is (pos? (card/rank-comparator :queen :jack)))
+    (is (pos? (card/rank-comparator 10 9))))
+  (testing "card default comparisons are correct"
+    (let [ace (card/make-card :ace :spades)
+          ace' (card/make-card :ace :clubs)
+          face (card/make-card :queen :hearts)
+          face' (card/make-card :king :diamonds)
+          numeric (card/make-card 10 :clubs)
+          numeric' (card/make-card 9 :hearts)]
+      (is (pos? (card/card-comparator ace ace')))
+      (is (neg? (card/card-comparator ace' ace)))
+      (is (pos? (card/card-comparator face face')))
+      (is (neg? (card/card-comparator face' face)))
+      (is (pos? (card/card-comparator numeric' numeric)))
+      (is (neg? (card/card-comparator numeric numeric'))))))
+
 (deftest card-validation
   (testing "invalid cards cannot be created"
     (is (thrown? Exception (card/make-card :foo :bar)))
