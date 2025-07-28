@@ -70,3 +70,11 @@
                        suit [:hearts :diamonds :clubs :spades]]
                    (card/->str (card/make-card rank suit)))]
       (is (= expected actual)))))
+
+(deftest card-sorting
+  (testing "cards can be sorted"
+    (let [original (for [suit spec/default-suits-order
+                         rank spec/default-ranks-order]
+                     (card/make-card rank suit))
+          shuffled (shuffle original)]
+      (is (= original (sort card/card-comparator shuffled))))))
