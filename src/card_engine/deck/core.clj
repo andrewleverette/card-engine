@@ -1,7 +1,8 @@
 (ns card-engine.deck.core
   (:require
    [card-engine.card.interface :as card]
-   [card-engine.card.spec :as card-spec]))
+   [card-engine.card.spec :as card-spec]
+   [card-engine.deck.spec :as spec]))
 
 (defn make-deck
   "Returns a new deck of cards."
@@ -11,7 +12,10 @@
                  (card/make-card rank suit))]
      (make-deck cards)))
   ([cards]
-   {:deck/cards cards}))
+   (if-let [errors (spec/validate-deck cards)]
+     (throw (ex-info "Invalid deck" {:type :make-deck
+                                     :errors errors}))
+     {:deck/cards cards})))
 
 (defn cards
   "Returns the cards in the deck."

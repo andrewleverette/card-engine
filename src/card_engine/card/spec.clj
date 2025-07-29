@@ -14,7 +14,8 @@
 (defn valid-suit?
   "Returns true if the given suit is a valid valid suit value.
   
-  Args: suit - the suit to check"
+  Args:
+  * suit - the suit to check"
   [suit]
   (s/valid? :card/suit suit))
 
