@@ -11,7 +11,7 @@
   [game-type players]
   (let [shuffled-deck (deck/shuffle-deck (deck/make-deck))
         game-state {:game/type game-type
-                    :game/status :intital-setup
+                    :game/status :initial-setup
                     :game/phase :setup
                     :game/players players
                     :game/current-player-id nil
@@ -54,7 +54,7 @@
 
 (defn table-state
   [game-state]
-  (:game/table game-state))
+  (:game/table-state game-state))
 
 ;; --- Mutators ---
 
