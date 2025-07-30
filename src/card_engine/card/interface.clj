@@ -1,8 +1,11 @@
 (ns card-engine.card.interface
-  "Provides an interface for working with cards."
+  "Provides a public interface for working with cards."
   (:require
    [card-engine.card.core :as core]))
 
+;; --- Public Interface ---
+
+;; --- Constructors ---
 (defn make-card
   "Returns a card with the given rank and suit.
   
@@ -13,6 +16,8 @@
   Returns a card object or throws an exception if the card is invalid."
   [rank suit]
   (core/make-card rank suit))
+
+;; --- Selectors ---
 
 (defn rank
   "Returns the rank of the card.
@@ -27,6 +32,8 @@
   Args:
   * card - the card to get the suit of"
   [card] (core/suit card))
+
+;; --- Comparators ---
 
 (defn suit-comparator
   "Returns the default comparison of the suits of two cards."
@@ -51,6 +58,8 @@
   Returns a sorted collection of cards."
   ([cards] (core/sort-cards cards))
   ([cards comparator-fn] (core/sort-cards cards comparator-fn)))
+
+;; --- String Representation ---
 
 (defn ->str
   "Returns a string representation of the card."

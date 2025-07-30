@@ -30,18 +30,19 @@
     (is (= {:dealt [] :remaining {:deck/cards []} :status :deck-empty}
            (deck/deal-cards {:deck/cards []} 5))))
   (testing "dealing multiple cards from a non-empty deck with enough cards"
-    (is (= {:dealt [(card/make-card :ace :spades)
-                    (card/make-card :two :spades)
-                    (card/make-card :three :spades)]
-            :remaining {:deck/cards [(card/make-card :four :spades)]}}
-           (deck/deal-cards {:deck/cards [(card/make-card :ace :spades)
-                                          (card/make-card :two :spades)
-                                          (card/make-card :three :spades)
-                                          (card/make-card :four :spades)]}
-                            3))))
+    (let [original-cards [(card/make-card :ace :spades)
+                          (card/make-card 2 :spades)
+                          (card/make-card 3 :spades)
+                          (card/make-card 4 :spades)]
+          dealt-cards [(card/make-card 4 :spades)
+                       (card/make-card 3 :spades)
+                       (card/make-card 2 :spades)]
+          remaining-cards [(card/make-card :ace :spades)]]
+
+      (is (= {:dealt dealt-cards :remaining {:deck/cards remaining-cards}}
+             (deck/deal-cards {:deck/cards original-cards} 3)))))
   (testing "dealing more cards than are in the deck"
     (is (= {:dealt [(card/make-card :ace :spades)]
             :remaining {:deck/cards []}
             :status :deck-empty}
            (deck/deal-cards {:deck/cards [(card/make-card :ace :spades)]} 5)))))
-

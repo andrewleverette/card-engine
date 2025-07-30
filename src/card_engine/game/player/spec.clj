@@ -15,3 +15,31 @@
                                     :player/score
                                     :player/status
                                     :player/is-dealer?]))
+
+(defn validate-player
+  "Checks if the given player is valid. If the player is not valid, returns a
+  sequence of error objects. If the player is valid, returns nil."
+  [player]
+  (let [{:player/keys [name hand score status is-dealer?]} player]
+    (cond-> []
+      (not (s/valid? :player/name name)) (conj {:type :invalid-player-name
+                                                :value name
+                                                :message (str "Player name '" name "' is not valid.")
+                                                :spec (s/explain-str :player/name name)})
+      (not (s/valid? :player/hand hand)) (conj {:type :invalid-player-hand
+                                                :value hand
+                                                :message "Player hand contains an invalid card"
+                                                :spec (s/explain-str :player/hand hand)})
+      (not (s/valid? :player/score score)) (conj {:type :invalid-player-score
+                                                  :value score
+                                                  :message (str "Player score '" score "' is not valid.")
+                                                  :spec (s/explain-str :player/score score)})
+      (not (s/valid? :player/status status)) (conj {:type :invalid-player-status
+                                                    :value status
+                                                    :message (str "Player status '" status "' is not valid.")
+                                                    :spec (s/explain-str :player/status status)})
+      (not (s/valid? :player/is-dealer? is-dealer?)) (conj {:type :invalid-player-is-dealer?
+                                                            :value is-dealer?
+                                                            :message (str "Player is-dealer? '" is-dealer? "' is not valid.")
+                                                            :spec (s/explain-str :player/is-dealer? is-dealer?)})
+      :else seq)))

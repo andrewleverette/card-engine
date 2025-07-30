@@ -1,14 +1,24 @@
-(ns card-engine.game.player.core)
+(ns card-engine.game.player.core
+  (:require
+   [card-engine.game.player.spec :as spec]))
+
+;; --- Constructors ---
 
 (defn make-player
   "Returns a new player object with the given name."
   [player-name]
-  {:player/id (java.util.UUID/randomUUID)
-   :player/name player-name
-   :player/hand []
-   :player/score 0
-   :player/status :active
-   :player/is-dealer? false})
+  (let [player {:player/id (java.util.UUID/randomUUID)
+                :player/name player-name
+                :player/hand []
+                :player/score 0
+                :player/status :active
+                :player/is-dealer? false}]
+    (if-let [errors (spec/validate-player player)]
+      (throw (ex-info "Invalid player" {:type :make-player
+                                        :errors errors}))
+      player)))
+
+;; --- Selectors
 
 (defn id
   [player]
@@ -22,6 +32,20 @@
   [player]
   (:player/hand player))
 
+(defn score
+  [player]
+  (:player/score player))
+
+(defn status
+  [player]
+  (:player/status player))
+
+(defn is-dealer?
+  [player]
+  (:player/is-dealer? player))
+
+;; --- Mutators ---
+
 (defn set-hand
   [player hand]
   (assoc player :player/hand (fn [_] hand)))
@@ -30,26 +54,24 @@
   [player card]
   (update player :player/hand conj card))
 
-(defn score
-  [player]
-  (:player/score player))
-
 (defn set-score
   [player score]
   (assoc player :player/score score))
-
-(defn status
-  [player]
-  (:player/status player))
 
 (defn set-status
   [player status]
   (assoc player :player/status status))
 
-(defn is-dealer?
-  [player]
-  (:player/is-dealer? player))
-
 (defn set-dealer-status
   [player is-dealer?]
   (assoc player :player/is-dealer? is-dealer?))
+
+;; --- String Representation ---
+
+(defn ->str
+  [player]
+  (str "Player: " (player-name player) " - " (id player)))
+
+(defn ->short-str
+  [player]
+  (str "Player: " (player-name player)))

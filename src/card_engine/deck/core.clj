@@ -4,6 +4,8 @@
    [card-engine.card.spec :as card-spec]
    [card-engine.deck.spec :as spec]))
 
+;; --- Constructors ---
+
 (defn make-deck
   "Returns a new deck of cards."
   ([]
@@ -17,10 +19,14 @@
                                      :errors errors}))
      {:deck/cards cards})))
 
+;; --- Selectors ---
+
 (defn cards
   "Returns the cards in the deck."
   [deck]
   (:deck/cards deck))
+
+;; --- Mutators ---
 
 (defn shuffle-deck
   "Returns a shuffled deck of cards."

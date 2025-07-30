@@ -1,15 +1,22 @@
 (ns card-engine.deck.interface
-  "Provides an interface for working with card decks."
+  "Provides a public interface for working with card decks."
   (:require
    [card-engine.deck.core :as core]))
 
+;; --- Public Interface ---
+
+;; --- Constructors ---
 (defn make-deck
   "Returns a standard 52 card deck with a default ordering of cards."
   [] (core/make-deck))
 
+;; --- Selectors ---
+
 (defn cards
   "Returns the cards in the deck."
   [deck] (core/cards deck))
+
+;; --- Mutators ---
 
 (defn shuffle-deck
   "Given a deck, returns the deck with its cards shuffled.
