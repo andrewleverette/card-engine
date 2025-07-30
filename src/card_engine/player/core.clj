@@ -1,4 +1,4 @@
-(ns card-engine.game.player.core
+(ns card-engine.player.core
   (:require
    [card-engine.game.player.spec :as spec]))
 

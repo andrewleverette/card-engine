@@ -1,4 +1,4 @@
-(ns card-engine.game.player.spec
+(ns card-engine.player.spec
   (:require
    [clojure.spec.alpha :as s]))
 

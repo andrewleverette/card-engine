@@ -1,6 +1,11 @@
 (ns card-engine.game.state.interface
+  "Provides a public interface for working with game state objects."
   (:require
    [card-engine.game.state.core :as core]))
+
+;; --- Public Interface ---
+
+;; --- Constructors ---
 
 (defn make-game-state
   "Returns a new game state with default values.
@@ -9,3 +14,89 @@
   * game-type: The type of game to create.
   * players: A list of player ids."
   [game-type players] (core/make-game-state game-type players))
+
+;; --- Selectors ---
+
+(defn game-type
+  "Returns the type of the game.
+  
+  Args:
+  * game-state - the game state object"
+  [game-state] (core/game-type game-state))
+
+(defn status
+  "Returns the status of the game.
+  
+  Args:
+  * game-state - the game state object"
+  [game-state] (core/status game-state))
+
+(defn phase
+  "Returns the phase of the game.
+  
+  Args:
+  * game-state - the game state object"
+  [game-state] (core/phase game-state))
+
+(defn current-player
+  "Returns the player object of the active player for the turn
+  
+  Args:
+  * game-state - the game state object"
+  [game-state] (core/current-player game-state))
+
+(defn deck-state
+  "Returns the deck state object.
+  
+  Args:
+  * game-state - the game state object"
+  [game-state] (core/deck-state game-state))
+
+(defn table-state
+  "Returns the table state object.
+  
+  Args:
+  * game-state - the game state object"
+  [game-state] (core/table-state game-state))
+
+;; --- Mutators ---
+
+(defn set-status
+  "Sets the status of the game.
+  
+  Args:
+  * game-state - the game state object
+  * status - the new status of the game"
+  [game-state status] (core/set-status game-state status))
+
+(defn set-phase
+  "Sets the phase of the game.
+  
+  Args:
+  * game-state - the game state object
+  * phase - the new phase of the game"
+  [game-state phase] (core/set-phase game-state phase))
+
+(defn set-current-player
+  "Sets the current player for the turn.
+  
+  Args:
+  * game-state - the game state object
+  * player-id - the id of the player to set as the active player"
+  [game-state player-id] (core/set-current-player game-state player-id))
+
+(defn set-deck-state
+  "Sets the deck state object.
+  
+  Args:
+  * game-state - the game state object
+  * deck-state - the new deck state object"
+  [game-state deck-state] (core/set-deck-state game-state deck-state))
+
+(defn set-table-state
+  "Sets the table state object.
+  
+  Args:
+  * game-state - the game state object
+  * table-state - the new table state object"
+  [game-state table-state] (core/set-table-state game-state table-state))

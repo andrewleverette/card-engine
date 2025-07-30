@@ -1,7 +1,7 @@
-(ns card-engine.game.player.interface
+(ns card-engine.player.interface
   "Provides a public interface for working with player objects."
   (:require
-   [card-engine.game.player.core :as core]))
+   [card-engine.player.core :as core]))
 
 ;; --- Public Interface ---
 

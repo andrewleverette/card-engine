@@ -1,7 +1,7 @@
 (ns card-engine.game.state.core
   (:require
    [card-engine.deck.interface :as deck]
-   [card-engine.game.player.interface :as player]
+   [card-engine.player.interface :as player]
    [card-engine.game.state.spec :as spec]))
 
 ;; --- Constructors ---
@@ -65,6 +65,10 @@
 (defn set-phase
   [game-state phase]
   (assoc game-state :game/phase phase))
+
+(defn set-current-player
+  [game-state player-id]
+  (assoc game-state :game/current-player-id player-id))
 
 (defn set-deck-state
   [game-state deck-state]
