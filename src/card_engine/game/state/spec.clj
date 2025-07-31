@@ -1,7 +1,7 @@
 (ns card-engine.game.state.spec
   (:require
    [clojure.spec.alpha :as s]
-   [card-engine.game.player.spec]
+   [card-engine.player.spec]
    [card-engine.deck.spec]))
 
 (s/def ::optional-id (s/nilable uuid?))

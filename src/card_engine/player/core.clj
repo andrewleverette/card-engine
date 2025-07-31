@@ -1,6 +1,6 @@
 (ns card-engine.player.core
   (:require
-   [card-engine.game.player.spec :as spec]))
+   [card-engine.player.spec :as spec]))
 
 ;; --- Constructors ---
 

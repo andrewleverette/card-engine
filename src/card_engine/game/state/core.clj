@@ -45,12 +45,13 @@
   [game-state]
   (when-let [player-id (:game/current-player-id game-state)]
     (->> (players game-state)
-         (filter #(= player-id (player/id %)))
+         (map-indexed (fn [idx player] [idx player]))
+         (filter (fn [[_ player]] (= player-id (:player/id player))))
          first)))
 
 (defn deck-state
   [game-state]
-  (:game/deck game-state))
+  (:game/deck-state game-state))
 
 (defn table-state
   [game-state]
