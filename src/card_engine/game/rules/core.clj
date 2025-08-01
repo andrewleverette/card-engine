@@ -1,10 +1,11 @@
 (ns card-engine.game.rules.core
   (:require
+   [clojure.edn :as edn]
+   [clojure.java.io :as io]
    [card-engine.deck.interface :as deck]
    [card-engine.player.interface :as player]
    [card-engine.game.state.interface :as state]
-   [clojure.edn :as edn]
-   [clojure.java.io :as io]))
+   [card-engine.game.rules.dealing :refer [deal-action]]))
 
 (defn load-ruleset
   "Returns the ruleset with the given name.
@@ -21,13 +22,18 @@
 
 (defmulti check-condition
   "Checks if the given rule's condition is met.
-  Returns true if the condition is met, false otherwise"
+  Returns true if the condition is met.
+  
+  If no dispatcher is found, returns true"
   (fn [_ rule] (:rule/condition-type rule)))
 
 (defmethod check-condition :game-phase-matches
   [game-state rule]
   (let [{:rule/keys [condition-params]} rule]
     (= (:game/phase game-state) (:phase condition-params))))
+
+(defmethod check-condition :default
+  [_ _] true)
 
 (defmulti apply-action
   "Applies the given action to the game state.
@@ -36,16 +42,45 @@
 
 (defmethod apply-action :deal
   [game-state rule]
-  (let [{:rule/keys [action-params]} rule
-        {:keys [num-cards from]} action-params
-        draw-pile (get-in game-state [:game/deck-state from])
-        {:keys [dealt remaining status]} (deck/deal-cards draw-pile num-cards)
-        [p-idx p] (state/current-player game-state)
-        p' (reduce #(player/add-card %1 %2) p dealt)]
-    (-> game-state
-        (assoc-in [:game/deck-state from] remaining)
-        (assoc-in [:game/deck-state :deck/status] status)
-        (assoc-in [:game/players p-idx] p'))))
+  (let [{:rule/keys [action-params]} rule]
+    (deal-action game-state action-params)))
+
+(defmethod apply-action :transition-phase
+  [game-state rule]
+  (let [{:rule/keys [action-params]} rule]
+    (state/set-phase game-state (:next-phase action-params))))
+
+(defmethod apply-action :transition-player
+  [game-state rule]
+  (let [{:rule/keys [_]} rule]
+    (let [[p-idx p] (state/current-player game-state)
+          players (state/players game-state)
+          next-player-idx (if (nil? p-idx) 0 (mod (inc p-idx) (count players)))
+          next-player (get players next-player-idx)]
+      (if (player/is-dealer? next-player)
+        ;; If the next player is a dealer, 
+        ;; set the current player to the next non-dealer 
+        (let [idx (mod (inc next-player-idx) (count players))
+              player (get players idx)]
+          (state/set-current-player game-state (player/id player)))
+        (state/set-current-player game-state (player/id next-player))))))
+
+(defmethod apply-action :card-management
+  [game-state rule]
+  (let [{:rule/keys [action-params]} rule]
+    (if (= :collect-all-cards (:action action-params))
+      (let [players (mapv #(player/reset-player %) (state/players game-state))
+            new-deck (deck/shuffle-deck (deck/make-deck))]
+        (-> game-state
+            (assoc-in [:game/players] players)
+            (state/set-deck-state {:deck/draw-pile new-deck
+                                   :deck/discard-pile []})
+            (state/set-table-state {})
+            (state/set-current-player nil)))
+      game-state)))
+
+(defmethod apply-action :default
+  [game-state _] game-state)
 
 (defn apply-rule
   "Applies the given rule to the game state if its condition is met.

@@ -11,7 +11,7 @@
   [game-type players]
   (let [shuffled-deck (deck/shuffle-deck (deck/make-deck))
         game-state {:game/type game-type
-                    :game/status :initial-setup
+                    :game/status :setup
                     :game/phase :setup
                     :game/players players
                     :game/current-player-id nil
@@ -41,13 +41,32 @@
   [game-state]
   (:game/players game-state))
 
+(defn non-dealer-players
+  [game-state]
+  (->> (players game-state)
+       (filter #(not (player/is-dealer? %)))))
+
+(defn player
+  [game-state player-id]
+  (->> (players game-state)
+       (map-indexed vector)
+       (filter (fn [[_ player]] (= player-id (player/id player))))
+       first))
+
 (defn current-player
   [game-state]
   (when-let [player-id (:game/current-player-id game-state)]
     (->> (players game-state)
-         (map-indexed (fn [idx player] [idx player]))
-         (filter (fn [[_ player]] (= player-id (:player/id player))))
+         (map-indexed vector)
+         (filter (fn [[_ player]] (= player-id (player/id player))))
          first)))
+
+(defn dealer
+  [game-state]
+  (->> (players game-state)
+       (map-indexed vector)
+       (filter (fn [[_ player]] (player/is-dealer? player)))
+       first))
 
 (defn deck-state
   [game-state]

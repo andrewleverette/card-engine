@@ -48,7 +48,7 @@
 
 (defn set-hand
   [player hand]
-  (assoc player :player/hand (fn [_] hand)))
+  (assoc player :player/hand hand))
 
 (defn add-card
   [player card]
@@ -66,12 +66,19 @@
   [player is-dealer?]
   (assoc player :player/is-dealer? is-dealer?))
 
+(defn reset-player
+  [player]
+  (-> player
+      (set-hand [])
+      (set-score 0)
+      (set-status :active)))
+
 ;; --- String Representation ---
 
 (defn ->str
   [player]
-  (str "Player: " (player-name player) " - " (id player)))
+  (str (player-name player) " - " (id player)))
 
 (defn ->short-str
   [player]
-  (str "Player: " (player-name player)))
+  (player-name player))

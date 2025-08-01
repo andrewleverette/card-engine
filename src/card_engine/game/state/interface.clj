@@ -38,12 +38,41 @@
   * game-state - the game state object"
   [game-state] (core/phase game-state))
 
+(defn players
+  "Returns the list of player objects.
+
+  Args:
+  * game-state - the game state object"
+  [game-state] (core/players game-state))
+
+(defn non-dealer-players
+  "Returns the list of non-dealer player objects.
+  
+  Args:
+  * game-state - the game state object"
+  [game-state] (core/non-dealer-players game-state))
+
+(defn player
+  "Returns the player object for the given player id.
+
+  Args:
+  * game-state - the game state object
+  * player-id - the player id"
+  [game-state player-id] (core/player game-state player-id))
+
 (defn current-player
   "Returns the player object of the active player for the turn
   
   Args:
   * game-state - the game state object"
   [game-state] (core/current-player game-state))
+
+(defn dealer
+  "Returns the player object of the dealer.
+  
+  Args:
+  * game-state - the game state object"
+  [game-state] (core/dealer game-state))
 
 (defn deck-state
   "Returns the deck state object.

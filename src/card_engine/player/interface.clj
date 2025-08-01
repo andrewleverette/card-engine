@@ -100,6 +100,14 @@
   * is-dealer? - whether the player is the dealer"
   [player is-dealer?] (core/set-dealer-status player is-dealer?))
 
+(defn reset-player
+  "Resets the player's hand, score, and status
+  to their default values.
+
+  Args:
+  * player - the player to reset"
+  [player] (core/reset-player player))
+
 ;; --- String Representation ---
 
 (defn ->str
