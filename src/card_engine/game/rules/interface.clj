@@ -1,4 +1,5 @@
 (ns card-engine.game.rules.interface
+  "Provides a public interface to the rules engine."
   (:require
    [card-engine.game.rules.core :as core]))
 

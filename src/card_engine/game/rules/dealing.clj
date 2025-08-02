@@ -1,4 +1,8 @@
 (ns card-engine.game.rules.dealing
+  "This namespace defines the functions that deal cards to players.
+  
+  This is provided by a multimethod that dispatches on the rule's action params
+  target value."
   (:require
    [card-engine.deck.interface :as deck]
    [card-engine.player.interface :as player]
@@ -33,15 +37,28 @@
            ps))))))
 
 (defmulti deal-action
-  "Applies the deal action to the game state.
-  Returns the new game-state"
+  "Applies the deal action to the game state and 
+  returns the new game-state. If no dispatcher is found, 
+  returns the game-state unchanged.
+  
+  Args:
+  * game-state: The current game state
+  * params: The rule's action params
+  
+  Dispatchers:
+  * :current-player - Deals the given number of cards to the current player
+  * :all-players - Deals the given number of cards to all players
+  * :all-non-dealers - Deals the given number of cards to all non-dealers
+  * :dealer - Deals the given number of cards to the dealer"
   (fn [_ params] (:target params)))
 
 (defmethod deal-action :current-player
   [game-state params]
   (let [{:keys [num-cards from]} params
         player (state/current-player game-state)]
-    (deal-to-player game-state player from num-cards)))
+    (if player
+      (deal-to-player game-state player from num-cards)
+      game-state)))
 
 (defmethod deal-action :all-players
   [game-state params]
@@ -61,5 +78,7 @@
   [game-state params]
   (let [{:keys [num-cards from]} params
         dealer (state/dealer game-state)]
-    (deal-to-player game-state dealer from num-cards)))
+    (if dealer
+      (deal-to-player game-state dealer from num-cards)
+      game-state)))
 
