@@ -2,6 +2,7 @@
   (:require
    [clojure.edn :as edn]
    [clojure.java.io :as io]
+   [clojure.string :as str]
    [card-engine.game.state.interface :as state]
    [card-engine.game.rules.actions :refer [apply-action]]
    [card-engine.game.rules.conditions :refer [check-condition]]))
@@ -18,6 +19,16 @@
                                            :errors [{:type :ruleset-not-found
                                                      :value ruleset-name
                                                      :message "Could not find ruleset file"}]})))))
+
+(defn list-rulesets
+  "Returns a list of all available rulesets defined in resources/game_rules."
+  []
+  (->> (io/file "resources/game_rules")
+       file-seq
+       (filter #(.isFile %))
+       (map #(.getName %))
+       (filter #(.endsWith % ".edn"))
+       (map #(str/replace % ".edn" ""))))
 
 (defn apply-rule
   "Applies the given rule to the game state if its condition is met.

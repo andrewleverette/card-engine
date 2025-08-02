@@ -12,6 +12,10 @@
   [ruleset-name]
   (core/load-ruleset ruleset-name))
 
+(defn list-rulesets
+  "Returns a list of all available rulesets defined in resources/game_rules."
+  [] (core/list-rulesets))
+
 (defn apply-rule
   "Applies the given rule to the game state if its condition is met.
   Returns the new game-state
