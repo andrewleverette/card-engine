@@ -32,18 +32,28 @@
   (let [{:rule/keys [condition-params]} rule]
     (= (:game/phase game-state) (:phase condition-params))))
 
+(defmethod check-condition :game-over-condition-met?
+  [game-state _]
+  (let [players (state/players game-state)]
+    (every? #(#{:win :lose :tie} (player/status %)) players)))
+
 (defmethod check-condition :default
   [_ _] true)
 
 (defmulti apply-action
   "Applies the given action to the game state.
   Returns the new game-state"
-  (fn [_ rule] (:rule/action-type rule)))
+  (fn [_ rule] (:rule/type rule)))
 
 (defmethod apply-action :deal
   [game-state rule]
   (let [{:rule/keys [action-params]} rule]
     (deal-action game-state action-params)))
+
+(defmethod apply-action :transition-game-status
+  [game-state rule]
+  (let [{:rule/keys [action-params]} rule]
+    (state/set-status game-state (:status action-params))))
 
 (defmethod apply-action :transition-phase
   [game-state rule]
@@ -53,7 +63,7 @@
 (defmethod apply-action :transition-player
   [game-state rule]
   (let [{:rule/keys [_]} rule]
-    (let [[p-idx p] (state/current-player game-state)
+    (let [[p-idx _] (state/current-player game-state)
           players (state/players game-state)
           next-player-idx (if (nil? p-idx) 0 (mod (inc p-idx) (count players)))
           next-player (get players next-player-idx)]
@@ -90,3 +100,14 @@
     (apply-action game-state rule)
     game-state))
 
+(defn apply-ruleset
+  "Applies the rules in the given ruleset to the game state."
+  [game-state ruleset]
+  (let [phase (state/phase game-state)
+        rules (get-in ruleset [:ruleset/phases phase])]
+    (if (seq rules)
+      (reduce apply-rule game-state rules)
+      (throw (ex-info "Failed to apply ruleset" {:type :apply-ruleset
+                                                 :errors [{:type :no-rules-for-phase
+                                                           :value phase
+                                                           :message "No rules found for phase"}]})))))
