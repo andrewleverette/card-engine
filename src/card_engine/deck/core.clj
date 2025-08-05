@@ -1,3 +1,6 @@
+;; Copyright (c) 2025 Andrew Leverette
+;; Distributed under the MIT License. See LICENSE.md.
+
 (ns card-engine.deck.core
   (:require
    [card-engine.card.interface :as card]

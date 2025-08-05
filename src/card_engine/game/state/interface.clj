@@ -1,3 +1,6 @@
+;; Copyright (c) 2025 Andrew Leverette
+;; Distributed under the MIT License. See LICENSE.md.
+
 (ns card-engine.game.state.interface
   "Provides a public interface for working with game state objects."
   (:require

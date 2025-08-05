@@ -1,3 +1,6 @@
+;; Copyright (c) 2025 Andrew Leverette
+;; Distributed under the MIT License. See LICENSE.md.
+
 (ns card-engine.game.rules.actions
   "This namespace defines the functions that apply the actions of rules to the game state and
   moves the game state forward.
@@ -42,9 +45,8 @@
     (state/set-phase game-state (:next-phase action-params))))
 
 (defmethod apply-action :transition-player
-  [game-state rule]
-  (let [{:rule/keys [_]} rule
-        [p-idx _] (state/current-player game-state)
+  [game-state _]
+  (let [[p-idx _] (state/current-player game-state)
         players (state/players game-state)
         next-player-idx (if (nil? p-idx) 0 (mod (inc p-idx) (count players)))
         next-player (get players next-player-idx)]

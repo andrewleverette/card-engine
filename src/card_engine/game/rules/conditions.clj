@@ -1,3 +1,6 @@
+;; Copyright (c) 2025 Andrew Leverette
+;; Distributed under the MIT License. See LICENSE.md.
+
 (ns card-engine.game.rules.conditions
   "This namespace defines the functions that check if a rule's condition is met. This
   determines if the rule should be applied to the game state or should be ignored.

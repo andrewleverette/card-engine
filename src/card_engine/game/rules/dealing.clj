@@ -1,3 +1,6 @@
+;; Copyright (c) 2025 Andrew Leverette
+;; Distributed under the MIT License. See LICENSE.md.
+
 (ns card-engine.game.rules.dealing
   "This namespace defines the functions that deal cards to players.
   
