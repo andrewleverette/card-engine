@@ -20,7 +20,7 @@
       (with-open [rdr (io/reader source)]
         (let [ruleset (edn/read (java.io.PushbackReader. rdr))
               errors (validate-ruleset ruleset)]
-          (if (seq errors)
+          (if errors
             (throw (ex-info "Invalid ruleset" {:type :load-ruleset
                                                :errors errors}))
             ruleset)))
