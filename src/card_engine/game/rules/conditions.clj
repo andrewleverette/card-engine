@@ -8,7 +8,8 @@
   This is provided by a multimethod that dispatches on the rule's condition-type."
   (:require
    [card-engine.player.interface :as player]
-   [card-engine.game.state.interface :as state]))
+   [card-engine.game.state.interface :as state]
+   [card-engine.game.rules.comparisons :refer [comparison]]))
 
 (defmulti check-condition
   "Checks if the given rule's condition is met.
@@ -20,7 +21,8 @@
 
   Dispatchers:
   * :game-phase-matches - Checks if the game phase matches the given phase
-  * :game-over-condition-met? - Checks if the game is over"
+  * :game-over-condition-met? - Checks if the game is over
+  * :score-threshold - Checks if the player's score meets the given threshold"
   (fn [_ rule] (:rule/condition-type rule)))
 
 (defmethod check-condition :game-phase-matches
@@ -32,6 +34,18 @@
   [game-state _]
   (let [players (state/players game-state)]
     (every? #(#{:win :lose :tie} (player/status %)) players)))
+
+(defmethod check-condition :score-threshold
+  [game-state rule]
+  (let [{:keys [target threshold operator]} (:rule/condition-params rule)
+        ;; Currently only supports selecting the dealer or the current player
+        ;; TODO: Add support for selecting a specific player
+        player (cond
+                 (= target :dealer) (state/dealer game-state)
+                 (= target :current-player) (state/current-player game-state)
+                 :else nil)]
+    (when player
+      (comparison operator (player/score player) threshold))))
 
 (defmethod check-condition :default
   [_ _] true)
