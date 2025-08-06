@@ -10,7 +10,8 @@
    [card-engine.player.interface :as player]
    [card-engine.deck.interface :as deck]
    [card-engine.game.state.interface :as state]
-   [card-engine.game.rules.dealing :refer [deal-action]]))
+   [card-engine.game.rules.dealing :refer [deal-action]]
+   [card-engine.game.rules.scoring :refer [score-hand]]))
 
 (defmulti apply-action
   "Applies the given action to the game state and
@@ -71,6 +72,43 @@
             (state/set-table-state {})
             (state/set-current-player nil)))
       game-state)))
+
+(defmethod apply-action :score-hands
+  [game-state _]
+  (let [game-type (state/game-type game-state)
+        players (state/players game-state)
+        scored-players (mapv (fn [p]
+                               (let [hand (player/hand p)
+                                     score (score-hand game-type hand)]
+                                 (player/set-score p score)))
+                             players)]
+    (assoc game-state :game/players scored-players)))
+
+(defmethod apply-action :evaluate-players-vs-dealer-result
+  [game-state _]
+  (let [[_ dealer] (state/dealer game-state)
+        dealer-score (player/score dealer)
+        all-players (state/players game-state)
+        updated-players (mapv (fn [p]
+                                (cond
+                                  (player/is-dealer? p) p
+                                  (> (player/score p) dealer-score) (player/set-status p :won)
+                                  (< (player/score p) dealer-score) (player/set-status p :lost)
+                                  :else (player/set-status p :tie)))
+                              all-players)]
+    (assoc game-state :game/players updated-players)))
+
+(defmethod apply-action :evaluate-player-vs-player-result
+  [game-state _]
+  (let [players (state/players game-state)
+        scores (mapv player/score players)
+        max-score (if (seq scores) (apply max scores) 0)
+        updated-players (mapv (fn [p]
+                                (if (= (player/score p) max-score)
+                                  (player/set-status p :won)
+                                  (player/set-status p :lost)))
+                              players)]
+    (assoc game-state :game/players updated-players)))
 
 (defmethod apply-action :default
   [game-state _] game-state)

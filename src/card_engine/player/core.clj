@@ -37,7 +37,7 @@
 
 (defn score
   [player]
-  (:player/score player))
+  (get player :player/score 0))
 
 (defn status
   [player]
