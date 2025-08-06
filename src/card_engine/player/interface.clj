@@ -54,6 +54,13 @@
   * player - the player to get the status of"
   [player] (core/status player))
 
+(defn strategy
+  "Returns the strategy of the player.
+  
+  Args:
+  * player - the player to get the strategy of"
+  [player] (core/strategy player))
+
 (defn is-dealer?
   "Returns whether the player is the dealer.
   
@@ -94,6 +101,14 @@
   * player - the player to set the status of
   * status - the status to set the player's status to"
   [player status] (core/set-status player status))
+
+(defn set-strategy
+  "Sets the strategy of the player.
+  
+  Args:
+  * player - the player to set the strategy of
+  * strategy - the strategy to set the player's strategy to"
+  [player strategy] (core/set-strategy player strategy))
 
 (defn set-dealer-status
   "Sets whether the player is the dealer.
