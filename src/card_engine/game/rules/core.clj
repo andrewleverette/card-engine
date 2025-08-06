@@ -6,6 +6,7 @@
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.string :as str]
+   [card-engine.game.rules.spec :refer [validate-ruleset]]
    [card-engine.game.state.interface :as state]
    [card-engine.game.rules.actions :refer [apply-action]]
    [card-engine.game.rules.conditions :refer [check-condition]]))
@@ -17,7 +18,12 @@
   (let [path (str "game_rules/" ruleset-name ".edn")]
     (if-let [source (io/resource path)]
       (with-open [rdr (io/reader source)]
-        (edn/read (java.io.PushbackReader. rdr)))
+        (let [ruleset (edn/read (java.io.PushbackReader. rdr))
+              errors (validate-ruleset ruleset)]
+          (if (seq errors)
+            (throw (ex-info "Invalid ruleset" {:type :load-ruleset
+                                               :errors errors}))
+            ruleset)))
       (throw (ex-info "Ruleset not found" {:type :load-ruleset
                                            :errors [{:type :ruleset-not-found
                                                      :value ruleset-name
