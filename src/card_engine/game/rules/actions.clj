@@ -10,6 +10,7 @@
    [card-engine.player.interface :as player]
    [card-engine.deck.interface :as deck]
    [card-engine.game.state.interface :as state]
+   [card-engine.game.strategy.interface :as strategy]
    [card-engine.game.rules.dealing :refer [deal-action]]
    [card-engine.game.rules.scoring :refer [score-hand]]))
 
@@ -58,6 +59,13 @@
             player (get players idx)]
         (state/set-current-player game-state (player/id player)))
       (state/set-current-player game-state (player/id next-player)))))
+
+(defmethod apply-action :get-player-action
+  [game-state _]
+  (let [[p-idx p] (state/current-player game-state)
+        action (strategy/get-player-action game-state p)
+        p' (player/set-action p action)]
+    (assoc-in game-state [:game/players p-idx] p')))
 
 (defmethod apply-action :card-management
   [game-state rule]
