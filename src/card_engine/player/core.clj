@@ -16,6 +16,7 @@
                 :player/score 0
                 :player/status :active
                 :player/strategy :interactive
+                :player/action nil
                 :player/is-dealer? false}]
     (if-let [errors (spec/validate-player player)]
       (throw (ex-info "Invalid player" {:type :make-player
@@ -48,6 +49,10 @@
   [player]
   (:player/strategy player))
 
+(defn action
+  [player]
+  (:player/actions player))
+
 (defn is-dealer?
   [player]
   (:player/is-dealer? player))
@@ -73,6 +78,10 @@
 (defn set-strategy
   [player strategy]
   (assoc player :player/strategy strategy))
+
+(defn set-action
+  [player action]
+  (assoc player :player/action action))
 
 (defn set-dealer-status
   [player is-dealer?]

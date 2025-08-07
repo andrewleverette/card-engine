@@ -61,6 +61,13 @@
   * player - the player to get the strategy of"
   [player] (core/strategy player))
 
+(defn action
+  "Returns the action of the player.
+
+  Args:
+  * player - the player to get the action of"
+  [player] (core/action player))
+
 (defn is-dealer?
   "Returns whether the player is the dealer.
   
@@ -109,6 +116,14 @@
   * player - the player to set the strategy of
   * strategy - the strategy to set the player's strategy to"
   [player strategy] (core/set-strategy player strategy))
+
+(defn set-action
+  "Sets the next action of the player.
+  
+  Args:
+  * player - the player to set the action of
+  * action - the action to set the player's action to"
+  [player action] (core/set-action player action))
 
 (defn set-dealer-status
   "Sets whether the player is the dealer.
