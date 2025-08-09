@@ -1,10 +1,12 @@
 # Clojure Card Engine
 
+(WORK IN PROGRESS)
+
 ## Overview
 
 This project is a modular and data-driven engine for building card games in Clojure. The core philosophy is to separate game-specific logic from the engine itself. Game rules are defined in external EDN files, making the engine highly configurable and reusable for various card games without any code changes.
 
-The engine uses immutable data structures, making game state management predictable and safe. Its extensible architecture, powered by Clojure's multimethods, allows for new rule types and actions to be added effortlessly.
+The engine uses immutable data structures, making game state management predictable and safe. Its extensible architecture, powered by Clojure's multimethods, allows for new rule types and actions to be added easily.
 
 ## Core Features
 
