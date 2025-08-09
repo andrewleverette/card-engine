@@ -29,7 +29,7 @@
             (recur (inc total) (dec aces))
             (recur total-with-ace-high (dec aces))))))))
 
-(defmethod score-hand :highest-card
+(defmethod score-hand :highest-score
   [_ hand]
   (reduce (fn [score card]
             (let [rank (card/rank card)]

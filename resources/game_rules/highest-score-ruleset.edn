@@ -1,4 +1,4 @@
-{:game/type :highest-card
+{:game/type :highest-score
  :ruleset/phases
  {:setup
   [{:rule/id :transition-game-status-to-in-progress
