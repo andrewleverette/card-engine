@@ -19,8 +19,6 @@
   (let [{:game/keys [state ruleset]} game]
     (loop [s state]
       (if (= :game-over (state/status s))
-        (do
-          (println "Game over")
-          s)
+        s
         (let [next-state (rules/apply-ruleset s ruleset)]
           (recur next-state))))))

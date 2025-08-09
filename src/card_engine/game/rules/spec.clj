@@ -5,10 +5,18 @@
   (:require
    [clojure.spec.alpha :as s]))
 
+;; Rule Parts
+(s/def :rule/type #{:apply :if-then :if-then-else :cond})
+(s/def :rule/condition (s/keys :req [:condition/type :condition/params]))
+(s/def :rule/action (s/keys :req [:action/type]
+                            :opt [:action/params]))
+(s/def :rule/else (s/keys :req [:rule/action]))
+(s/def :rule/clauses (s/coll-of (s/keys :req [:rule/condition :rule/action])))
+
 ;; Single Rule Spec
 (s/def ::rule
-  (s/keys :req [:rule/id :rule/desc :rule/type]
-          :opt [:rule/condition-type :rule/condition-params :rule/action-params]))
+  (s/keys :req [:rule/id :rule/desc :rule/type :rule/action]
+          :opt [:rule/condition :rule/else :rule/clauses]))
 
 ;; Ruleset Phase Spec
 (s/def :ruleset/phases (s/map-of keyword? (s/coll-of ::rule :kind vector?)))

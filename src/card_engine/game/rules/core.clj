@@ -6,8 +6,8 @@
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.string :as str]
-   [card-engine.game.rules.spec :refer [validate-ruleset]]
    [card-engine.game.state.interface :as state]
+   [card-engine.game.rules.spec :refer [validate-ruleset]]
    [card-engine.game.rules.actions :refer [apply-action]]
    [card-engine.game.rules.conditions :refer [check-condition]]))
 
@@ -39,13 +39,53 @@
        (filter #(.endsWith % ".edn"))
        (map #(str/replace % ".edn" ""))))
 
-(defn apply-rule
-  "Applies the given rule to the game state if its condition is met.
-  Returns the new game-state"
+(defn rule-type
+  [rule]
+  (:rule/type rule))
+
+(defn condition
+  [rule]
+  (:rule/condition rule))
+
+(defn action
+  [rule]
+  (:rule/action rule))
+
+(defmulti apply-rule
+  (fn [_ rule] (rule-type rule)))
+
+(defmethod apply-rule :apply
+  [game-state rule]
+  (apply-action game-state rule))
+
+(defmethod apply-rule :if-then
   [game-state rule]
   (if (check-condition game-state rule)
     (apply-action game-state rule)
     game-state))
+
+(defmethod apply-rule :if-then-else
+  [game-state rule]
+  (if (check-condition game-state rule)
+    (apply-action game-state rule)
+    (apply-action game-state (:rule/else rule))))
+
+(defmethod apply-rule :cond
+  [game-state rule]
+  (loop [[clause & clauses] (:rule/clauses rule)]
+    (cond
+      (nil? clause) (if-let [else (:rule/else rule)]
+                      (apply-action game-state else)
+                      game-state)
+      (check-condition game-state clause) (apply-action game-state clause)
+      :else (recur clauses))))
+
+(defmethod apply-rule :default
+  [game-state rule]
+  (throw (ex-info "Failed to apply rule" {:type :apply-rule
+                                          :errors [{:type :unknown-rule-type
+                                                    :message "Unknown rule type"
+                                                    :value (rule-type rule)}]})))
 
 (defn apply-ruleset
   "Applies the rules in the given ruleset to the game state."

@@ -19,6 +19,27 @@
   "Returns a list of all available rulesets defined in resources/game_rules."
   [] (core/list-rulesets))
 
+(defn rule-type
+  "Returns the type of the given rule.
+  
+  Args:
+  * rule: The rule object"
+  [rule] (core/rule-type rule))
+
+(defn condition
+  "Returns the condition of the given rule.
+
+  Args:
+  * rule: The rule object"
+  [rule] (core/condition rule))
+
+(defn action
+  "Returns the action of the given rule.
+  
+  Args:
+  * rule: The rule object"
+  [rule] (core/action rule))
+
 (defn apply-rule
   "Applies the given rule to the game state if its condition is met.
   Returns the new game-state

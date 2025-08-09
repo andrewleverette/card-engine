@@ -14,6 +14,16 @@
    [card-engine.game.rules.dealing :refer [deal-action]]
    [card-engine.game.rules.scoring :refer [score-hand]]))
 
+(defn- action-type
+  "Returns the action type of the given rule."
+  [rule]
+  (get-in rule [:rule/action :action/type]))
+
+(defn- action-params
+  "Returns the action params of the given rule."
+  [rule]
+  (get-in rule [:rule/action :action/params]))
+
 (defmulti apply-action
   "Applies the given action to the game state and
   returns the new game-state. If no dispatcher is found, 
@@ -29,22 +39,22 @@
   * :transition-phase - Sets the game phase to the given phase.
   * :transition-player - Sets the current player to the next player.
   * :card-management - Resets the deck state and player state"
-  (fn [_ rule] (:rule/type rule)))
+  (fn [_ rule] (action-type rule)))
 
 (defmethod apply-action :deal
   [game-state rule]
-  (let [{:rule/keys [action-params]} rule]
-    (deal-action game-state action-params)))
+  (let [params (action-params rule)]
+    (deal-action game-state params)))
 
 (defmethod apply-action :transition-game-status
   [game-state rule]
-  (let [{:rule/keys [action-params]} rule]
-    (state/set-status game-state (:status action-params))))
+  (let [params (action-params rule)]
+    (state/set-status game-state (:status params))))
 
 (defmethod apply-action :transition-phase
   [game-state rule]
-  (let [{:rule/keys [action-params]} rule]
-    (state/set-phase game-state (:next-phase action-params))))
+  (let [params (action-params rule)]
+    (state/set-phase game-state (:next-phase params))))
 
 (defmethod apply-action :transition-player
   [game-state _]
@@ -67,10 +77,17 @@
         p' (player/set-action p action)]
     (assoc-in game-state [:game/players p-idx] p')))
 
+(defmethod apply-action :update-player-status
+  [game-state rule]
+  (let [params (action-params rule)
+        [p-idx p] (state/current-player game-state)
+        p' (player/set-status p (:status params))]
+    (assoc-in game-state [:game/players p-idx] p')))
+
 (defmethod apply-action :card-management
   [game-state rule]
-  (let [{:rule/keys [action-params]} rule]
-    (if (= :collect-all-cards (:action action-params))
+  (let [params (action-params rule)]
+    (if (= :collect-all-cards (:action params))
       (let [players (mapv #(player/reset-player %) (state/players game-state))
             new-deck (deck/shuffle-deck (deck/make-deck))]
         (-> game-state
@@ -81,7 +98,15 @@
             (state/set-current-player nil)))
       game-state)))
 
-(defmethod apply-action :score-hands
+(defmethod apply-action :score-player-hand
+  [game-state _]
+  (let [[p-idx p] (state/current-player game-state)
+        game-type (state/game-type game-state)
+        hand (player/hand p)
+        p' (player/set-score p (score-hand game-type hand))]
+    (assoc-in game-state [:game/players p-idx] p')))
+
+(defmethod apply-action :score-all-player-hands
   [game-state _]
   (let [game-type (state/game-type game-state)
         players (state/players game-state)
@@ -119,4 +144,8 @@
     (assoc game-state :game/players updated-players)))
 
 (defmethod apply-action :default
-  [game-state _] game-state)
+  [game-state rule]
+  (throw (ex-info "Failed to apply action" {:type :apply-action
+                                            :errors [{:type :unknown-action-type
+                                                      :message "Unknown action type"
+                                                      :value (action-type rule)}]})))

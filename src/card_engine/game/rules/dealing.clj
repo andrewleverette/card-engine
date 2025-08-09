@@ -16,10 +16,10 @@
   (let [draw-pile (get-in game-state [:game/deck-state from])
         {:keys [dealt remaining status]} (deck/deal-cards draw-pile num-cards)
         p' (reduce #(player/add-card %1 %2) p dealt)]
-    (->> game-state
-         (assoc-in [:game/deck-state from] remaining)
-         (assoc-in [:game/deck-state :deck/status] status)
-         (assoc-in [:game/players p-idx] p'))))
+    (-> game-state
+        (assoc-in [:game/deck-state from] remaining)
+        (assoc-in [:game/deck-state :deck/status] status)
+        (assoc-in [:game/players p-idx] p'))))
 
 (defn- deal-to-many-players
   [game-state players from num-cards]
@@ -85,3 +85,9 @@
       (deal-to-player game-state dealer from num-cards)
       game-state)))
 
+(defmethod deal-action :default
+  [game-state params]
+  (throw (ex-info "Failed to apply deal action" {:type :apply-deal-action
+                                                 :errors [{:type :unknown-deal-action
+                                                           :message "Unknown deal action target"
+                                                           :value (:target params)}]})))

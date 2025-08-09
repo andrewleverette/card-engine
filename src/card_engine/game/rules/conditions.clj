@@ -11,6 +11,16 @@
    [card-engine.game.state.interface :as state]
    [card-engine.game.rules.comparisons :refer [comparison]]))
 
+(defn- condition-type
+  "Returns the condition type of the given rule."
+  [rule]
+  (get-in rule [:rule/condition :condition/type]))
+
+(defn- condition-params
+  "Returns the condition params of the given rule."
+  [rule]
+  (get-in rule [:rule/condition :condition/params]))
+
 (defmulti check-condition
   "Checks if the given rule's condition is met.
   Returns true if the condition is met or no dispatcher is found.
@@ -23,12 +33,36 @@
   * :game-phase-matches - Checks if the game phase matches the given phase
   * :game-over-condition-met? - Checks if the game is over
   * :score-threshold - Checks if the player's score meets the given threshold"
-  (fn [_ rule] (:rule/condition-type rule)))
+  (fn [_ rule] (condition-type rule)))
 
 (defmethod check-condition :game-phase-matches
   [game-state rule]
-  (let [{:rule/keys [condition-params]} rule]
-    (= (:game/phase game-state) (:phase condition-params))))
+  (let [params (condition-params rule)]
+    (= (state/phase game-state) (:phase params))))
+
+(defmethod check-condition :player-status-matches
+  [game-state rule]
+  (let [params (condition-params rule)
+        [_ p] (state/current-player game-state)]
+    (= (player/status p) (:status params))))
+
+(defmethod check-condition :player-status-in-set?
+  [game-state rule]
+  (let [params (condition-params rule)
+        [_ p] (state/current-player game-state)]
+    (contains? (:set params) (player/status p))))
+
+(defmethod check-condition :all-players-status-in-set?
+  [game-state rule]
+  (let [params (condition-params rule)
+        players (state/non-dealer-players game-state)]
+    (every? #(contains? (:set params) (player/status %)) players)))
+
+(defmethod check-condition :player-action-matches
+  [game-state rule]
+  (let [params (condition-params rule)
+        [_ p] (state/current-player game-state)]
+    (= (player/action p) (:action params))))
 
 (defmethod check-condition :game-over-condition-met?
   [game-state _]
@@ -37,13 +71,13 @@
 
 (defmethod check-condition :score-threshold
   [game-state rule]
-  (let [{:keys [target threshold operator]} (:rule/condition-params rule)
+  (let [{:keys [target threshold operator]} (condition-params rule)
         ;; Currently only supports selecting the dealer or the current player
         ;; TODO: Add support for selecting a specific player
-        player (cond
-                 (= target :dealer) (state/dealer game-state)
-                 (= target :current-player) (state/current-player game-state)
-                 :else nil)]
+        [_ player] (cond
+                     (= target :dealer) (state/dealer game-state)
+                     (= target :current-player) (state/current-player game-state)
+                     :else nil)]
     (when player
       (comparison operator (player/score player) threshold))))
 
