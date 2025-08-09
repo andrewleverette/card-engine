@@ -1,0 +1,101 @@
+{:game/type :highest-card
+ :ruleset/phases
+ {:setup
+  [{:rule/id :transition-game-status-to-in-progress
+    :rule/desc "Sets the game status to :in-progress."
+    :rule/type :apply
+    :rule/action {:action/type :transition-game-status
+                  :action/params {:status :in-progress}}}
+
+   {:rule/id :transition-to-initial-deal
+    :rule/desc "Moves game to the initial deal phase."
+    :rule/type :apply
+    :rule/action {:action/type :transition-phase
+                  :action/params {:next-phase :initial-deal}}}]
+
+  :initial-deal
+  [{:rule/id :deal-two-cards-to-all-players
+    :rule/desc "Deals two cards to all players and the dealer."
+    :rule/type :apply
+    :rule/action {:action/type :deal
+                  :action/params {:target :all-players
+                                  :num-cards 2
+                                  :from :deck/draw-pile
+                                  :to :hand}}}
+
+   {:rule/id :transition-to-scoring
+    :rule/desc "Moves game to the scoring phase."
+    :rule/type :apply
+    :rule/action {:action/type :transition-phase
+                  :action/params {:next-phase :player-turn-start}}}]
+
+  :player-turn-start
+  [{:rule/id :set-current-player
+    :rule/desc "Sets the current player to the first active player."
+    :rule/type :apply
+    :rule/action {:action/type :transition-player}}
+
+   {:rule/id :transition-to-player-turn
+    :rule/desc "Transitions to the player's turn phase"
+    :rule/type :apply
+    :rule/action {:action/type :transition-phase
+                  :action/params {:next-phase :player-turn}}}]
+  :player-turn
+  [{:rule/id :evaluate-player-hand
+    :rule/desc "Evaluates the player's hand."
+    :rule/type :apply
+    :rule/action {:action/type :score-player-hand}}
+
+   {:rule/id :player-draws-card-if-score-is-less-than-30
+    :rule/desc "Draws a card if the player's score is less than 30, otherwise ends turn."
+    :rule/type :if-then-else
+    :rule/condition {:condition/type :score-threshold
+                     :condition/params {:target :current-player
+                                        :threshold 30
+                                        :operator :<}}
+    :rule/action {:action/type :deal
+                  :action/params {:target :current-player
+                                  :num-cards 1
+                                  :from :deck/draw-pile
+                                  :to :hand}}
+    :rule/else {:rule/action {:action/type :update-player-status
+                              :action/params {:status :done}}}}
+
+   {:rule/id :if-player-done-transition-to-player-turn-end
+    :rule/desc "Moves to the next player's turn if the current player is done."
+    :rule/type :if-then
+    :rule/condition {:condition/type :player-status-in-set?
+                     :condition/params {:set #{:done}}}
+    :rule/action {:action/type :transition-phase
+                  :action/params {:next-phase :player-turn-end}}}]
+
+  :player-turn-end
+  [{:rule/id :move-to-next-player-or-scoring-phase
+    :rule/desc "Moves to the next player's turn or the scoring phase if all players are done."
+    :rule/type :if-then-else
+    :rule/condition {:condition/type :all-players-status-in-set?
+                     :condition/params {:set #{:done}}}
+    :rule/action {:action/type :transition-phase
+                  :action/params {:next-phase :round-end}}
+    :rule/else {:rule/action {:action/type :transition-phase
+                              :action/params {:next-phase :player-turn-start}}}}]
+
+  :round-end
+  [{:rule/id :collect-cards-and-reset
+    :rule/desc "Collects cards from all players and the dealer and resets the game."
+    :rule/type :apply
+    :rule/action {:action/type :card-management
+                  :action/params {:action :collect-cards}}}
+
+   {:rule/id :transition-to-end-game
+    :rule/desc "Moves game to the end game phase."
+    :rule/type :apply
+    :rule/action {:action/type :transition-phase
+                  :action/params {:next-phase :end-game}}}]
+
+  :end-game
+  [{:rule/id :set-game-over-status
+    :rule/desc "Sets the game status to :game-over, ending the game."
+    :rule/type :apply
+    :rule/action {:action/type :transition-game-status
+                  :action/params {:status :game-over}}}]}}
