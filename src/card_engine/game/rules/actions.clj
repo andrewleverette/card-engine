@@ -144,7 +144,7 @@
     (assoc game-state :game/players updated-players)))
 
 (defmethod apply-action :default
-  [game-state rule]
+  [_ rule]
   (throw (ex-info "Failed to apply action" {:type :apply-action
                                             :errors [{:type :unknown-action-type
                                                       :message "Unknown action type"

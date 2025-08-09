@@ -9,7 +9,7 @@
   Dispathers:
   :standard - Returns the face value of number cards, 10 for jack, queen, and king, and 11 for ace
   :default - Returns 0"
-  (fn [game-type hand] game-type))
+  (fn [game-type _] game-type))
 
 (defmethod score-hand :blackjack
   [_ hand]
@@ -42,7 +42,7 @@
                 :else score))) 0 hand))
 
 (defmethod score-hand :default
-  [game-type hand]
+  [game-type _]
   (throw (ex-info "Failed to score hand" {:type :score-hand
                                           :errors [{:type :unknown-game-type
                                                     :message "Unknown game type"

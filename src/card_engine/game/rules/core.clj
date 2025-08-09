@@ -81,7 +81,7 @@
       :else (recur clauses))))
 
 (defmethod apply-rule :default
-  [game-state rule]
+  [_ rule]
   (throw (ex-info "Failed to apply rule" {:type :apply-rule
                                           :errors [{:type :unknown-rule-type
                                                     :message "Unknown rule type"

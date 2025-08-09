@@ -86,7 +86,7 @@
       game-state)))
 
 (defmethod deal-action :default
-  [game-state params]
+  [_ params]
   (throw (ex-info "Failed to apply deal action" {:type :apply-deal-action
                                                  :errors [{:type :unknown-deal-action
                                                            :message "Unknown deal action target"

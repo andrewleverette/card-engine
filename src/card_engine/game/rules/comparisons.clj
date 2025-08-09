@@ -20,7 +20,7 @@
   * :<= - Checks if the first value is less than or equal to the second value
   * :> - Checks if the first value is greater than the second value
   * :>= - Checks if the first value is greater than or equal to the second value"
-  (fn [op & args] op))
+  (fn [op & _] op))
 
 (defmethod comparison :=
   [_ & args]
