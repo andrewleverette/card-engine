@@ -11,6 +11,7 @@
   [player]
   {:results/player-id (player/id player)
    :results/player-name (player/player-name player)
+   :results/hand (player/hand player)
    :results/score (player/score player)
    :results/status (player/status player)})
 
@@ -32,7 +33,7 @@
               p-score (player/score p)
               p-status (player/status p)]
           (cond
-            (player/is-dealer? p) (recur (rest players) (assoc results :dealer {:results/score dealer-score :results/status dealer-status}))
+            (player/is-dealer? p) (recur (rest players) (assoc results :dealer (make-results p)))
             (= p-status :busted) (recur (rest players) (update results :lost conj (make-results p)))
             (= dealer-status :busted) (recur (rest players) (update results :won conj (make-results p)))
             (> p-score dealer-score) (recur (rest players) (update results :won conj (make-results p)))

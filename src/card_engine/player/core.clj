@@ -51,7 +51,7 @@
 
 (defn action
   [player]
-  (:player/actions player))
+  (:player/action player))
 
 (defn is-dealer?
   [player]
