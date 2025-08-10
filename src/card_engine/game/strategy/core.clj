@@ -3,6 +3,8 @@
 
 (ns card-engine.game.strategy.core
   (:require
+   [clojure.string :as str]
+   [card-engine.card.interface :as card]
    [card-engine.player.interface :as player]
    [card-engine.game.state.interface :as state]))
 
@@ -19,14 +21,17 @@
   (fn [game-state player]
     [(state/game-type game-state) (player/strategy player)]))
 
-(defmethod get-player-action [:blackjack :iterative]
-  [_ player]
-  (println "It's player " (player/->short-str player) "'s turn")
-  (println "Current hand: " (player/hand player))
-  (println "Available actions: :hit or :stand")
-  (print "> ")
-  (flush)
-  (read-string (read-line)))
+(defmethod get-player-action [:blackjack :interactive]
+  [game-state player]
+  (let [[_ dealer] (state/dealer game-state)]
+    (println "It's player " (player/->short-str player) "'s turn")
+    (println "Current hand: ")
+    (println (str/join "\n" (map card/->str (player/hand player))))
+    (println "Dealers face up card: " (card/->str (first (player/hand dealer))))
+    (println "Available actions: :hit or :stand")
+    (print "> ")
+    (flush)
+    (read-string (read-line))))
 
 (defmethod get-player-action :default
   [game-state player]

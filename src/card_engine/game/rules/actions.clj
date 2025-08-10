@@ -12,6 +12,7 @@
    [card-engine.game.state.interface :as state]
    [card-engine.game.strategy.interface :as strategy]
    [card-engine.game.rules.dealing :refer [deal-action]]
+   [card-engine.game.rules.results :refer [calculate-results]]
    [card-engine.game.rules.scoring :refer [score-hand]]))
 
 (defn- action-type
@@ -70,6 +71,11 @@
         (state/set-current-player game-state (player/id player)))
       (state/set-current-player game-state (player/id next-player)))))
 
+(defmethod apply-action :transition-dealer
+  [game-state _]
+  (let [[_ dealer] (state/dealer game-state)]
+    (state/set-current-player game-state (player/id dealer))))
+
 (defmethod apply-action :get-player-action
   [game-state _]
   (let [[p-idx p] (state/current-player game-state)
@@ -106,6 +112,14 @@
         p' (player/set-score p (score-hand game-type hand))]
     (assoc-in game-state [:game/players p-idx] p')))
 
+(defmethod apply-action :score-dealer-hand
+  [game-state _]
+  (let [[idx d] (state/dealer game-state)
+        game-type (state/game-type game-state)
+        hand (player/hand d)
+        d' (player/set-score d (score-hand game-type hand))]
+    (assoc-in game-state [:game/players idx] d')))
+
 (defmethod apply-action :score-all-player-hands
   [game-state _]
   (let [game-type (state/game-type game-state)
@@ -116,6 +130,11 @@
                                  (player/set-score p score)))
                              players)]
     (assoc game-state :game/players scored-players)))
+
+(defmethod apply-action :calculate-results
+  [game-state _]
+  (let [results (calculate-results game-state)]
+    (assoc game-state :game/results results)))
 
 (defmethod apply-action :evaluate-players-vs-dealer-result
   [game-state _]

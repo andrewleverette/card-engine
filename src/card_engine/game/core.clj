@@ -3,6 +3,7 @@
 
 (ns card-engine.game.core
   (:require
+   [card-engine.player.interface :as player]
    [card-engine.game.rules.interface :as rules]
    [card-engine.game.state.interface :as state]))
 
@@ -14,11 +15,22 @@
     {:game/state game-state
      :game/ruleset ruleset}))
 
+(defn game-winners
+  [game-state]
+  (->> game-state
+       state/players
+       (filter #(= :win (player/status %)))
+       (map player/->short-str)))
+
 (defn game-loop
   [game]
   (let [{:game/keys [state ruleset]} game]
     (loop [s state]
       (if (= :game-over (state/status s))
-        s
-        (let [next-state (rules/apply-ruleset s ruleset)]
-          (recur next-state))))))
+        (do
+          (println "Game over.")
+          (println "Results: " (:game/results s)))
+        (do
+          (println "Applying ruleset for phase " (state/phase s))
+          (let [next-state (rules/apply-ruleset s ruleset)]
+            (recur next-state)))))))

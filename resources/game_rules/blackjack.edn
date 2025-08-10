@@ -1,0 +1,220 @@
+{:game/type :blackjack
+
+ :ruleset/phases
+ {:setup
+  [{:rule/id :transition-game-status-to-in-progress
+    :rule/desc "Sets the game status to :in-progress."
+    :rule/type :apply
+    :rule/action {:action/type :transition-game-status}}
+
+   {:rule/id :transition-to-initial-deal-phase
+    :rule/desc "Moves game to the initial deal phase."
+    :rule/type :apply
+    :rule/action {:action/type :transition-phase
+                  :action/params {:next-phase :initial-deal}}}]
+
+  :initial-deal
+  [{:rule/id :deal-first-card-to-players
+    :rule/desc "Deals the first card to each player."
+    :rule/type :apply
+    :rule/action {:action/type :deal
+                  :action/params {:target :all-non-dealers
+                                  :num-cards 1
+                                  :from :deck/draw-pile
+                                  :to :hand
+                                  :face-up true}}}
+
+   {:rule/id :deal-first-card-to-dealer
+    :rule/desc "Deals the first card to the dealer."
+    :rule/type :apply
+    :rule/action {:action/type :deal
+                  :action/params {:target :dealer
+                                  :num-cards 1
+                                  :from :deck/draw-pile
+                                  :to :hand
+                                  :face-up true}}}
+
+   {:rule/id :deal-second-card-to-players
+    :rule/desc "Deals the second card to each player."
+    :rule/type :apply
+    :rule/action {:action/type :deal
+                  :action/params {:target :all-non-dealers
+                                  :num-cards 1
+                                  :from :deck/draw-pile
+                                  :to :hand
+                                  :face-up true}}}
+
+   {:rule/id :deal-second-card-to-dealer
+    :rule/desc "Deals the second card to the dealer, face down."
+    :rule/type :apply
+    :rule/action {:action/type :deal
+                  :action/params {:target :dealer
+                                  :num-cards 1
+                                  :from :deck/draw-pile
+                                  :to :hand
+                                  :face-up false}}}
+
+   {:rule/id :transition-to-player-turn
+    :rule/desc "Moves game to the next phase."
+    :rule/type :apply
+    :rule/action {:action/type :transition-phase
+                  :action/params {:next-phase :player-turn-start}}}]
+
+  :player-turn-start
+  [{:rule/id :set-current-player
+    :rule/desc "Sets the current player to the first active player."
+    :rule/type :apply
+    :rule/action {:action/type :transition-player}}
+
+   {:rule/id :score-initial-player-hand
+    :rule/desc "Scores the player's initial hand."
+    :rule/type :apply
+    :rule/action {:action/type :score-player-hand}}
+
+   {:rule/id :transition-to-player-turn
+    :rule/desc "Transitions to the player's turn phase, waiting for an action."
+    :rule/type :apply
+    :rule/action {:action/type :transition-phase
+                  :action/params {:next-phase :player-turn}}}]
+
+  :player-turn
+  [{:rule/id :determine-player-action
+    :rule/desc "Determines the current player's action."
+    :rule/type :apply
+    :rule/action {:action/type :get-player-action}}
+
+   {:rule/id :if-player-hit-deal-card
+    :rule/desc "Deals a card to the player if they choose to hit, else player is done."
+    :rule/type :if-then-else
+    :rule/condition {:condition/type :player-action-matches
+                     :condition/params {:action :hit}}
+    :rule/action {:action/type :deal
+                  :action/params {:target :current-player
+                                  :num-cards 1
+                                  :from :deck/draw-pile
+                                  :to :hand
+                                  :face-up true}}
+    :rule/else {:rule/action {:action/type :update-player-status
+                              :action/params {:status :done}}}}
+
+   {:rule/id :score-player-hand
+    :rule/desc "Scores the player's hand."
+    :rule/type :apply
+    :rule/action {:action/type :score-player-hand}}
+
+   {:rule/id :evaluate-player-hand
+    :rule/desc "Evaluates the player's hand. If the player busted, updates status."
+    :rule/type :if-then
+    :rule/condition {:condition/type :score-threshold
+                     :condition/params {:target :current-player
+                                        :threshold 21
+                                        :operator :>}}
+    :rule/action {:action/type :update-player-status
+                  :action/params {:status :busted}}}
+
+   {:rule/id :if-player-done-or-busted-transition-to-player-turn-end
+    :rule/desc "Moves to the player's end turn if the current player is done or busted."
+    :rule/type :if-then
+    :rule/condition {:condition/type :player-status-in-set?
+                     :condition/params {:set #{:done :busted}}}
+    :rule/action {:action/type :transition-phase
+                  :action/params {:next-phase :player-turn-end}}}]
+
+  :player-turn-end
+  [{:rule/id :move-to-next-player-or-dealer
+    :rule/desc "Moves to the next player's turn or to the dealer turn if all players are done."
+    :rule/type :if-then-else
+    :rule/condition {:condition/type :all-players-status-in-set?
+                     :condition/params {:set #{:done :busted}}}
+    :rule/action {:action/type :transition-phase
+                  :action/params {:next-phase :dealer-turn-start}}
+    :rule/else {:rule/action {:action/type :transition-phase
+                              :action/params {:next-phase :player-turn-start}}}}]
+
+  :dealer-turn-start
+  [{:rule/id :set-current-player-to-dealer
+    :rule/desc "Sets the current player to the dealer."
+    :rule/type :apply
+    :rule/action {:action/type :transition-dealer}}
+
+   {:rule/id :score-initial-dealer-hand
+    :rule/desc "Scores the dealer's initial hand."
+    :rule/type :apply
+    :rule/action {:action/type :score-player-hand}}
+
+   {:rule/id :transition-to-dealer-turn
+    :rule/desc "Transitions to the dealer's turn phase."
+    :rule/type :apply
+    :rule/action {:action/type :transition-phase
+                  :action/params {:next-phase :dealer-turn}}}]
+
+  :dealer-turn
+  [{:rule/id :hit-if-score-less-than-17
+    :rule/desc "The dealer hits if their score is less than 17, otherwise stands."
+    :rule/type :if-then-else
+    :rule/condition {:condition/type :score-threshold-met
+                     :condition/params {:target :dealer
+                                        :threshold 17
+                                        :operator :<}}
+    :rule/action {:action/type :deal
+                  :action/params {:target :current-player
+                                  :num-cards 1
+                                  :from :deck/draw-pile
+                                  :to :hand
+                                  :face-up true}}
+    :rule/else {:rule/action {:action/type :update-player-status
+                              :actions/params {:status :done}}}}
+
+   {:rule/id :score-dealer-hand
+    :rule/desc "Scores the dealer's hand."
+    :rule/type :apply
+    :rule/action {:action/type :score-player-hand}}
+
+   {:rule/id :evaluate-dealer-hand
+    :rule/desc "Evaluates the dealer's hand. If the dealer busted, updates status."
+    :rule/type :if-then
+    :rule/condition {:condition/type :score-threshold
+                     :condition/params {:target :current-player
+                                        :threshold 21
+                                        :operator :>}}
+    :rule/action {:action/type :update-player-status
+                  :action/params {:status :busted}}}
+
+   {:rule/id :if-dealer-done-or-busted-transition-to-scoring
+    :rule/desc "Moves to the scoring phase if the dealer is done or busted."
+    :rule/type :if-then
+    :rule/condition {:condition/type :player-status-in-set?
+                     :condition/params {:set #{:done :busted}}}
+    :rule/action {:action/type :transition-phase
+                  :action/params {:next-phase :results}}}]
+
+  :results
+  [{:rule/id :determine-results
+    :rule/desc "Compares each player's hand to the dealer's and updates player status."
+    :rule/type :apply
+    :rule/action {:action/type :calculate-results}}
+
+   {:rule/id :transition-to-round-end
+    :rule/desc "Moves the game to the round-end phase."
+    :rule/type :apply
+    :rule/action {:action/type :transition-phase
+                  :action/params {:next-phase :round-end}}}]
+
+  :round-end
+  [{:rule/id :collect-cards-and-reset
+    :rule/desc "Gathers all cards from players and table and moves them to discard pile."
+    :rule/type :apply
+    :rule/action {:action/type :card-management
+                  :action/params {:action :collect-all-cards}}}
+
+   {:rule/id :transition-to-game-over-phase
+    :rule/desc "Prepares for the next round by transitioning to the initial deal phase."
+    :rule/type :apply
+    :rule/action {:action/type :transition-phase
+                  :action/params {:next-phase :game-over}}}
+
+   {:rule/id :transition-to-game-over-status
+    :rule/desc "Updates the game status."
+    :rule/type :apply
+    :rule/action {:action/type :transition-game-status
+                  :action/params {:status :game-over}}}]}}

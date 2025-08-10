@@ -1,3 +1,6 @@
+;; Copyright (c) 2025 Andrew Leverette
+;; Distributed under the MIT License. See LICENSE.md.
+
 (ns card-engine.game.rules.scoring
   "This namespace defines the functions that apply the scoring rules to the game state"
   (:require
@@ -7,7 +10,8 @@
   "Calculates the score for a players hand based on the game type.
 
   Dispathers:
-  :standard - Returns the face value of number cards, 10 for jack, queen, and king, and 11 for ace
+  :blackjack - Returns the face value of number cards, 10 for jack, queen, and king, and 11 for ace
+  :highest-score - Returns the highest possible score
   :default - Returns 0"
   (fn [game-type _] game-type))
 
@@ -16,9 +20,9 @@
   (let [card-ranks (map card/rank hand)
         ace-count (count (filter #{:ace} card-ranks))
         sum-minus-aces (reduce (fn [score rank]
-                                 (cond-> rank
-                                   #{:jack :queen :king} (+ score 10)
-                                   number? (+ score rank)
+                                 (cond
+                                   (contains? #{:jack :queen :king} rank) (+ score 10)
+                                   (number? rank) (+ score rank)
                                    :else score)) 0 (remove #{:ace} card-ranks))]
     (loop [total sum-minus-aces
            aces ace-count]
