@@ -152,7 +152,7 @@
   [{:rule/id :hit-if-score-less-than-17
     :rule/desc "The dealer hits if their score is less than 17, otherwise stands."
     :rule/type :if-then-else
-    :rule/condition {:condition/type :score-threshold-met
+    :rule/condition {:condition/type :score-threshold
                      :condition/params {:target :dealer
                                         :threshold 17
                                         :operator :<}}
@@ -163,7 +163,7 @@
                                   :to :hand
                                   :face-up true}}
     :rule/else {:rule/action {:action/type :update-player-status
-                              :actions/params {:status :done}}}}
+                              :action/params {:status :done}}}}
 
    {:rule/id :score-dealer-hand
     :rule/desc "Scores the dealer's hand."
@@ -174,7 +174,7 @@
     :rule/desc "Evaluates the dealer's hand. If the dealer busted, updates status."
     :rule/type :if-then
     :rule/condition {:condition/type :score-threshold
-                     :condition/params {:target :current-player
+                     :condition/params {:target :dealer
                                         :threshold 21
                                         :operator :>}}
     :rule/action {:action/type :update-player-status
