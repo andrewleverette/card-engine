@@ -20,7 +20,7 @@
    (if-let [errors (spec/validate-deck cards)]
      (throw (ex-info "Invalid deck" {:type :make-deck
                                      :errors errors}))
-     {:deck/cards cards})))
+     {:deck/cards (vec cards)})))
 
 ;; --- Selectors ---
 

@@ -67,6 +67,10 @@
   [player card]
   (update player :player/hand conj card))
 
+(defn add-cards
+  [player cards]
+  (update player :player/hand (partial apply conj) cards))
+
 (defn set-score
   [player score]
   (assoc player :player/score score))

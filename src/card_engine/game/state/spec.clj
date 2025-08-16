@@ -15,7 +15,7 @@
 (s/def :game/type keyword?)
 (s/def :game/status keyword?)
 (s/def :game/phase keyword?)
-(s/def :game/players (s/coll-of :player/player))
+(s/def :game/players (s/map-of uuid? :player/player))
 (s/def :game/current-player-id ::optional-id)
 (s/def :game/deck-state (s/keys :req [:deck/draw-pile
                                       :deck/discard-pile]))

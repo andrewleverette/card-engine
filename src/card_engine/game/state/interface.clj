@@ -91,6 +91,20 @@
   * game-state - the game state object"
   [game-state] (core/table-state game-state))
 
+(defn pending-prompt
+  "Returns the pending prompt object or nil if no prompt is pending.
+  
+  Args:
+  * game-state - the game state object"
+  [game-state] (core/pending-prompt game-state))
+
+(defn rule-index
+  "Returns the index of the current rule.
+
+  Args:
+  * game-state - the game state object"
+  [game-state] (core/rule-index game-state))
+
 ;; --- Mutators ---
 
 (defn set-status
@@ -132,3 +146,19 @@
   * game-state - the game state object
   * table-state - the new table state object"
   [game-state table-state] (core/set-table-state game-state table-state))
+
+(defn set-pending-prompt
+  "Sets the pending prompt object.
+
+  Args:
+  * game-state - the game state object
+  * prompt - the new pending prompt object"
+  [game-state prompt] (core/set-pending-prompt game-state prompt))
+
+(defn set-rule-index
+  "Sets the index of the current rule.
+
+  Args:
+  * game-state - the game state object
+  * idx - the new index of the current rule"
+  [game-state idx] (core/set-rule-index game-state idx))

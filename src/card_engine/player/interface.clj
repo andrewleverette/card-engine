@@ -93,6 +93,14 @@
   * card - the card to add to the player's hand"
   [player card] (core/add-card player card))
 
+(defn add-cards
+  "Adds cards to the player's hand.
+  
+  Args:
+  * player - the player object
+  * cards - the cards to add to the player's hand"
+  [player cards] (core/add-cards player cards))
+
 (defn set-score
   "Sets the score of the player.
   
