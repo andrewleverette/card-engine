@@ -11,12 +11,12 @@
    [card-engine.game.state.interface :as state]
    [card-engine.game.rules.comparisons :refer [comparison]]))
 
-(defn- condition-type
+(defn condition-type
   "Returns the condition type of the given rule."
   [rule]
   (get-in rule [:rule/condition :condition/type]))
 
-(defn- condition-params
+(defn condition-params
   "Returns the condition params of the given rule."
   [rule]
   (get-in rule [:rule/condition :condition/params]))
@@ -30,24 +30,24 @@
   * rule: The rule to check
 
   Dispatchers:
-  * :game-phase-matches - Checks if the game phase matches the given phase
   * :player-status-matches - Checks if the player status matches the given status
+  * :game-phase-matches - Checks if the game phase matches the given phase
   * :player-status-in-set? - Checks if the player status is in a given set
   * :all-players-status-in-set? - Checks if all players status are in a given set
   * :game-over-condition-met? - Checks if the game is over
   * :score-threshold - Checks if the player's score meets the given threshold"
   (fn [_ rule] (condition-type rule)))
 
-(defmethod check-condition :game-phase-matches
-  [game-state rule]
-  (let [params (condition-params rule)]
-    (= (state/phase game-state) (:phase params))))
-
 (defmethod check-condition :player-status-matches
   [game-state rule]
   (let [params (condition-params rule)
         p (state/current-player game-state)]
     (= (player/status p) (:status params))))
+
+(defmethod check-condition :game-phase-matches
+  [game-state rule]
+  (let [params (condition-params rule)]
+    (= (state/phase game-state) (:phase params))))
 
 (defmethod check-condition :player-status-in-set?
   [game-state rule]
