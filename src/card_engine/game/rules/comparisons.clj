@@ -51,4 +51,4 @@
   (apply >= args))
 
 (defmethod comparison :default
-  [_ _] true)
+  [_ & _] true)

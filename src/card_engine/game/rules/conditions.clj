@@ -43,7 +43,7 @@
 (defmethod check-condition :player-status-matches
   [game-state rule]
   (let [params (condition-params rule)
-        [_ p] (state/current-player game-state)]
+        p (state/current-player game-state)]
     (= (player/status p) (:status params))))
 
 (defmethod check-condition :player-status-in-set?
