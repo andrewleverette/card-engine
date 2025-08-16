@@ -16,10 +16,14 @@
   Dispatchers:
   * := - Checks if all values are equal
   * :!= - Checks if all values are not equal
-  * :< - Checks if the first value is less than the second value
-  * :<= - Checks if the first value is less than or equal to the second value
-  * :> - Checks if the first value is greater than the second value
-  * :>= - Checks if the first value is greater than or equal to the second value"
+  * :< - If two values are given, checks if the first value is less than the second value.
+         Otherwise, check if all values are less than their preceding value
+  * :<= - If two values are given, checks if the first value is less than or equal to the second value.
+          Otherwise, check if all values are less than or equal to their preceding value
+  * :> - If two values are given, checks if the first value is greater than the second value.
+         Otherwise, check if all values are greater than their preceding value
+  * :>= - If two values are given, checks if the first value is greater than or equal to the second value.
+          Otherwise, check if all values are greater than or equal to their preceding value"
   (fn [op & _] op))
 
 (defmethod comparison :=
