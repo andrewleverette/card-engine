@@ -31,6 +31,9 @@
 
   Dispatchers:
   * :game-phase-matches - Checks if the game phase matches the given phase
+  * :player-status-matches - Checks if the player status matches the given status
+  * :player-status-in-set? - Checks if the player status is in a given set
+  * :all-players-status-in-set? - Checks if all players status are in a given set
   * :game-over-condition-met? - Checks if the game is over
   * :score-threshold - Checks if the player's score meets the given threshold"
   (fn [_ rule] (condition-type rule)))
@@ -49,7 +52,7 @@
 (defmethod check-condition :player-status-in-set?
   [game-state rule]
   (let [params (condition-params rule)
-        [_ p] (state/current-player game-state)]
+        p (state/current-player game-state)]
     (contains? (:set params) (player/status p))))
 
 (defmethod check-condition :all-players-status-in-set?
@@ -58,10 +61,12 @@
         players (state/non-dealer-players game-state)]
     (every? #(contains? (:set params) (player/status %)) players)))
 
+;; TODO: Unsure if this is necessary after I update
+;; how actions are handled
 (defmethod check-condition :player-action-matches
   [game-state rule]
   (let [params (condition-params rule)
-        [_ p] (state/current-player game-state)]
+        p (state/current-player game-state)]
     (= (player/action p) (:action params))))
 
 (defmethod check-condition :game-over-condition-met?
@@ -74,10 +79,10 @@
   (let [{:keys [target threshold operator]} (condition-params rule)
         ;; Currently only supports selecting the dealer or the current player
         ;; TODO: Add support for selecting a specific player
-        [_ player] (cond
-                     (= target :dealer) (state/dealer game-state)
-                     (= target :current-player) (state/current-player game-state)
-                     :else nil)]
+        player (cond
+                 (= target :dealer) (state/dealer game-state)
+                 (= target :current-player) (state/current-player game-state)
+                 :else nil)]
     (when player
       (comparison operator (player/score player) threshold))))
 
