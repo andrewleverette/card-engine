@@ -48,7 +48,7 @@
 
 (defn players
   [game-state]
-  (vals (:game/players game-state)))
+  (vec (vals (:game/players game-state))))
 
 (defn non-dealer-players
   [game-state]

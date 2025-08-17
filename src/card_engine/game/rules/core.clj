@@ -62,7 +62,7 @@
   [game-state rule]
   (if (check-condition game-state rule)
     (apply-action game-state rule)
-    game-state))
+    []))
 
 (defmethod apply-rule :if-then-else
   [game-state rule]
@@ -82,10 +82,11 @@
 
 (defmethod apply-rule :default
   [_ rule]
-  (throw (ex-info "Failed to apply rule" {:type :apply-rule
-                                          :errors [{:type :unknown-rule-type
-                                                    :message "Unknown rule type"
-                                                    :value (rule-type rule)}]})))
+  [[:game/handle-error {:type :apply-rule
+                        :message "Failed to apply rule"
+                        :errors [{:type :unknown-rule-type
+                                  :message "Unknown rule type"
+                                  :value (rule-type rule)}]}]])
 
 (defn apply-ruleset
   "Applies the rules in the given ruleset to the game state."

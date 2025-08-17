@@ -11,7 +11,7 @@
     :rule/desc "Moves game to the initial deal phase."
     :rule/type :apply
     :rule/action {:action/type :transition-phase
-                  :action/params {:next-phase :initial-deal}}}]
+                  :action/params {:phase :initial-deal}}}]
 
   :initial-deal
   [{:rule/id :deal-first-card-to-players
@@ -58,7 +58,7 @@
     :rule/desc "Moves game to the next phase."
     :rule/type :apply
     :rule/action {:action/type :transition-phase
-                  :action/params {:next-phase :player-turn-start}}}]
+                  :action/params {:phase :player-turn-start}}}]
 
   :player-turn-start
   [{:rule/id :set-current-player
@@ -75,7 +75,7 @@
     :rule/desc "Transitions to the player's turn phase, waiting for an action."
     :rule/type :apply
     :rule/action {:action/type :transition-phase
-                  :action/params {:next-phase :player-turn}}}]
+                  :action/params {:phase :player-turn}}}]
 
   :player-turn
   [{:rule/id :determine-player-action
@@ -118,7 +118,7 @@
     :rule/condition {:condition/type :player-status-in-set?
                      :condition/params {:set #{:done :busted}}}
     :rule/action {:action/type :transition-phase
-                  :action/params {:next-phase :player-turn-end}}}]
+                  :action/params {:phase :player-turn-end}}}]
 
   :player-turn-end
   [{:rule/id :move-to-next-player-or-dealer
@@ -127,9 +127,9 @@
     :rule/condition {:condition/type :all-players-status-in-set?
                      :condition/params {:set #{:done :busted}}}
     :rule/action {:action/type :transition-phase
-                  :action/params {:next-phase :dealer-turn-start}}
+                  :action/params {:phase :dealer-turn-start}}
     :rule/else {:rule/action {:action/type :transition-phase
-                              :action/params {:next-phase :player-turn-start}}}}]
+                              :action/params {:phase :player-turn-start}}}}]
 
   :dealer-turn-start
   [{:rule/id :set-current-player-to-dealer
@@ -146,7 +146,7 @@
     :rule/desc "Transitions to the dealer's turn phase."
     :rule/type :apply
     :rule/action {:action/type :transition-phase
-                  :action/params {:next-phase :dealer-turn}}}]
+                  :action/params {:phase :dealer-turn}}}]
 
   :dealer-turn
   [{:rule/id :hit-if-score-less-than-17
@@ -186,7 +186,7 @@
     :rule/condition {:condition/type :player-status-in-set?
                      :condition/params {:set #{:done :busted}}}
     :rule/action {:action/type :transition-phase
-                  :action/params {:next-phase :results}}}]
+                  :action/params {:phase :results}}}]
 
   :results
   [{:rule/id :determine-results
@@ -198,7 +198,7 @@
     :rule/desc "Moves the game to the round-end phase."
     :rule/type :apply
     :rule/action {:action/type :transition-phase
-                  :action/params {:next-phase :round-end}}}]
+                  :action/params {:phase :round-end}}}]
 
   :round-end
   [{:rule/id :collect-cards-and-reset
@@ -211,7 +211,7 @@
     :rule/desc "Prepares for the next round by transitioning to the initial deal phase."
     :rule/type :apply
     :rule/action {:action/type :transition-phase
-                  :action/params {:next-phase :game-over}}}
+                  :action/params {:phase :game-over}}}
 
    {:rule/id :transition-to-game-over-status
     :rule/desc "Updates the game status."

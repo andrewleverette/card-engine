@@ -21,12 +21,14 @@
 
 (defmethod calculate-results :blackjack
   [game-state]
-  (let [[_ dealer] (state/dealer game-state)
+  (let [dealer (state/dealer game-state)
         dealer-score (player/score dealer)
         dealer-status (player/status dealer)
         players (state/players game-state)]
     (loop [players players
-           results {}]
+           results {:win []
+                    :lose []
+                    :tie []}]
       (if (empty? players)
         results
         (let [p (first players)
@@ -34,8 +36,8 @@
               p-status (player/status p)]
           (cond
             (player/is-dealer? p) (recur (rest players) (assoc results :dealer (make-results p)))
-            (= p-status :busted) (recur (rest players) (update results :lost conj (make-results p)))
-            (= dealer-status :busted) (recur (rest players) (update results :won conj (make-results p)))
-            (> p-score dealer-score) (recur (rest players) (update results :won conj (make-results p)))
-            (< p-score dealer-score) (recur (rest players) (update results :lost conj (make-results p)))
+            (= p-status :busted) (recur (rest players) (update results :lose conj (make-results p)))
+            (= dealer-status :busted) (recur (rest players) (update results :win conj (make-results p)))
+            (> p-score dealer-score) (recur (rest players) (update results :win conj (make-results p)))
+            (< p-score dealer-score) (recur (rest players) (update results :lose conj (make-results p)))
             :else (recur (rest players) (update results :tie conj (make-results p)))))))))

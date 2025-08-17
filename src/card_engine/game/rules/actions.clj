@@ -15,12 +15,12 @@
    [card-engine.game.rules.results :refer [calculate-results]]
    [card-engine.game.rules.scoring :refer [score-hand]]))
 
-(defn- action-type
+(defn action-type
   "Returns the action type of the given rule."
   [rule]
   (get-in rule [:rule/action :action/type]))
 
-(defn- action-params
+(defn action-params
   "Returns the action params of the given rule."
   [rule]
   (get-in rule [:rule/action :action/params]))
@@ -48,19 +48,25 @@
     (deal-action game-state params)))
 
 (defmethod apply-action :transition-game-status
-  [game-state rule]
+  [_ rule]
   (let [params (action-params rule)]
-    (state/set-status game-state (:status params))))
+    [[:state/assoc :game/status (:status params)]]))
 
 (defmethod apply-action :transition-phase
-  [game-state rule]
+  [_ rule]
   (let [params (action-params rule)]
-    (state/set-phase game-state (:next-phase params))))
+    [[:state/assoc :game/phase (:phase params)]]))
 
+;; TODO: This needs some work. I need to figure out a better
+;; way to define turn order, but this will work for now.
 (defmethod apply-action :transition-player
   [game-state _]
-  (let [[p-idx _] (state/current-player game-state)
+  (let [p (state/current-player game-state)
         players (state/players game-state)
+        p-idx (->> players
+                   (map-indexed (fn [idx p] [idx (player/id p)]))
+                   (filter (fn [[_ p-id]] (= p-id (player/id p))))
+                   ffirst)
         next-player-idx (if (nil? p-idx) 0 (mod (inc p-idx) (count players)))
         next-player (get players next-player-idx)]
     (if (player/is-dealer? next-player)
@@ -68,103 +74,71 @@
         ;; set the current player to the next non-dealer 
       (let [idx (mod (inc next-player-idx) (count players))
             player (get players idx)]
-        (state/set-current-player game-state (player/id player)))
-      (state/set-current-player game-state (player/id next-player)))))
+        [[:state/assoc :game/current-player-id (player/id player)]])
+      [[:state/assoc :game/current-player-id (player/id next-player)]])))
 
 (defmethod apply-action :transition-dealer
   [game-state _]
-  (let [[_ dealer] (state/dealer game-state)]
-    (state/set-current-player game-state (player/id dealer))))
+  (let [dealer (state/dealer game-state)]
+    [[:state/assoc :game/current-player-id (player/id dealer)]]))
 
 (defmethod apply-action :get-player-action
+  ;; TODO: This needs some work. I'm not entirely sure how to handle strategy yet
   [game-state _]
-  (let [[p-idx p] (state/current-player game-state)
+  (let [p (state/current-player game-state)
         action (strategy/get-player-action game-state p)
         p' (player/set-action p action)]
-    (assoc-in game-state [:game/players p-idx] p')))
+    [[:state/assoc-in [:game/players (player/id p)] p']]))
 
 (defmethod apply-action :update-player-status
   [game-state rule]
   (let [params (action-params rule)
-        [p-idx p] (state/current-player game-state)
+        p (state/current-player game-state)
         p' (player/set-status p (:status params))]
-    (assoc-in game-state [:game/players p-idx] p')))
+    [[:state/assoc-in [:game/players (player/id p)] p']]))
 
-(defmethod apply-action :card-management
-  [game-state rule]
-  (let [params (action-params rule)]
-    (if (= :collect-all-cards (:action params))
-      (let [players (mapv #(player/reset-player %) (state/players game-state))
-            new-deck (deck/shuffle-deck (deck/make-deck))]
-        (-> game-state
-            (assoc-in [:game/players] players)
-            (state/set-deck-state {:deck/draw-pile new-deck
-                                   :deck/discard-pile []})
-            (state/set-table-state {})
-            (state/set-current-player nil)))
-      game-state)))
+;; TODO: I'm not sure about this one either. Shuffling the deck
+;; is definitely a mutation, but there needs to be a way to reset
+;; the game state to a clean slate. This needs to be testable though.
+;; I'll leave this untested for now.
+(defmethod apply-action :reset-game
+  [game-state _]
+  (let [player-map (into {} (mapv
+                             (fn [p] [(player/id p) (player/reset-player p)])
+                             (state/players game-state)))
+        new-deck (deck/shuffle-deck (deck/make-deck))]
+    [[:state/assoc
+      :game/players player-map
+      :game/deck-state {:deck/draw-pile new-deck
+                        :deck/discard-pile []}
+      :game/table-state {}
+      :game/current-player-id nil]]))
 
 (defmethod apply-action :score-player-hand
   [game-state _]
-  (let [[p-idx p] (state/current-player game-state)
+  (let [p (state/current-player game-state)
         game-type (state/game-type game-state)
         hand (player/hand p)
         p' (player/set-score p (score-hand game-type hand))]
-    (assoc-in game-state [:game/players p-idx] p')))
+    [[:state/assoc-in [:game/players (player/id p)] p']]))
 
 (defmethod apply-action :score-dealer-hand
   [game-state _]
-  (let [[idx d] (state/dealer game-state)
+  (let [d (state/dealer game-state)
         game-type (state/game-type game-state)
         hand (player/hand d)
         d' (player/set-score d (score-hand game-type hand))]
-    (assoc-in game-state [:game/players idx] d')))
-
-(defmethod apply-action :score-all-player-hands
-  [game-state _]
-  (let [game-type (state/game-type game-state)
-        players (state/players game-state)
-        scored-players (mapv (fn [p]
-                               (let [hand (player/hand p)
-                                     score (score-hand game-type hand)]
-                                 (player/set-score p score)))
-                             players)]
-    (assoc game-state :game/players scored-players)))
+    [[:state/assoc-in [:game/players (player/id d)] d']]))
 
 (defmethod apply-action :calculate-results
   [game-state _]
   (let [results (calculate-results game-state)]
-    (assoc game-state :game/results results)))
-
-(defmethod apply-action :evaluate-players-vs-dealer-result
-  [game-state _]
-  (let [[_ dealer] (state/dealer game-state)
-        dealer-score (player/score dealer)
-        all-players (state/players game-state)
-        updated-players (mapv (fn [p]
-                                (cond
-                                  (player/is-dealer? p) p
-                                  (> (player/score p) dealer-score) (player/set-status p :won)
-                                  (< (player/score p) dealer-score) (player/set-status p :lost)
-                                  :else (player/set-status p :tie)))
-                              all-players)]
-    (assoc game-state :game/players updated-players)))
-
-(defmethod apply-action :evaluate-player-vs-player-result
-  [game-state _]
-  (let [players (state/players game-state)
-        scores (mapv player/score players)
-        max-score (if (seq scores) (apply max scores) 0)
-        updated-players (mapv (fn [p]
-                                (if (= (player/score p) max-score)
-                                  (player/set-status p :won)
-                                  (player/set-status p :lost)))
-                              players)]
-    (assoc game-state :game/players updated-players)))
+    [[:state/assoc :game/results results]]))
 
 (defmethod apply-action :default
   [_ rule]
-  (throw (ex-info "Failed to apply action" {:type :apply-action
-                                            :errors [{:type :unknown-action-type
-                                                      :message "Unknown action type"
-                                                      :value (action-type rule)}]})))
+  [[:game/handle-error {:type :apply-action
+                        :message "Failed to apply action"
+                        :errors [{:type :unknown-action-type
+                                  :message "Unknown action type"
+                                  :value (action-type rule)}]}]])
