@@ -119,8 +119,10 @@
   (let [p (state/current-player game-state)
         game-type (state/game-type game-state)
         hand (player/hand p)
-        p' (player/set-score p (score-hand game-type hand))]
-    [[:state/assoc-in [:game/players (player/id p)] p']]))
+        score-result (score-hand game-type hand)]
+    (if (= :game/handle-error (ffirst score-result))
+      score-result
+      [[:state/assoc-in [:game/players (player/id p)] (player/set-score p score-result)]])))
 
 (defmethod apply-action :score-dealer-hand
   [game-state _]
@@ -133,7 +135,9 @@
 (defmethod apply-action :calculate-results
   [game-state _]
   (let [results (calculate-results game-state)]
-    [[:state/assoc :game/results results]]))
+    (if (= :game/handle-error (ffirst results))
+      results
+      [[:state/assoc :game/results results]])))
 
 (defmethod apply-action :default
   [_ rule]

@@ -47,7 +47,8 @@
 
 (defmethod score-hand :default
   [game-type _]
-  (throw (ex-info "Failed to score hand" {:type :score-hand
-                                          :errors [{:type :unknown-game-type
-                                                    :message "Unknown game type"
-                                                    :value game-type}]})))
+  [[:game/handle-error {:type :score-hand
+                        :message "Failed to score hand"
+                        :errors [{:type :unknown-game-type
+                                  :message "Unknown game type"
+                                  :value game-type}]}]])

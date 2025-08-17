@@ -41,3 +41,11 @@
             (> p-score dealer-score) (recur (rest players) (update results :win conj (make-results p)))
             (< p-score dealer-score) (recur (rest players) (update results :lose conj (make-results p)))
             :else (recur (rest players) (update results :tie conj (make-results p)))))))))
+
+(defmethod calculate-results :default
+  [game-state]
+  [[:game/handle-error {:type :calculate-results
+                        :message "Failed to calculate results"
+                        :errors [{:type :unknown-game-type
+                                  :message "Unknown game type"
+                                  :value (state/game-type game-state)}]}]])
