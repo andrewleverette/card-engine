@@ -201,11 +201,10 @@
                   :action/params {:phase :round-end}}}]
 
   :round-end
-  [{:rule/id :collect-cards-and-reset
-    :rule/desc "Gathers all cards from players and table and moves them to discard pile."
+  [{:rule/id :reset-game-state
+    :rule/desc "Resets the game state for the next round."
     :rule/type :apply
-    :rule/action {:action/type :card-management
-                  :action/params {:action :collect-all-cards}}}
+    :rule/action {:action/type :reset-game}}
 
    {:rule/id :transition-to-game-over-phase
     :rule/desc "Prepares for the next round by transitioning to the initial deal phase."
