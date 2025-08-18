@@ -27,7 +27,9 @@
   [game-state player]
   (let [dealer (state/dealer game-state)]
     [[:game/handle-io {:prompt/player-id (player/id player)
-                       :prompt/message (str "Current hand: "
+                       :prompt/message (str "Player: "
+                                            (player/->short-str player)
+                                            "\n" "Current hand: "
                                             (str/join ", " (map card/->str (player/hand player)))
                                             "\n" "Dealers face up card: "
                                             (card/->str (first (player/hand dealer))))

@@ -20,11 +20,16 @@
   (let [{:prompt/keys [player-id message actions output-key]} prompt
         result (do
                  (println message)
-                 (println "Actions: " (pr-str actions))
+                 (println "Actions: [" (str/join " | " (map name actions)) "]")
                  (print "> ")
                  (flush)
                  (keyword (read-string (read-line))))]
-    (apply swap! game-state assoc-in [[:game/players player-id output-key] result])))
+    (if ((set actions) result)
+      (apply swap! game-state assoc-in [[:game/players player-id output-key] result])
+      (throw (ex-info "Failed to process io event" {:type :process-io-event
+                                                    :errors [{:type :unknown-player-action
+                                                              :message "Unknown player action"
+                                                              :value result}]})))))
 
 (defn process-state-changes
   [game-state changes]
