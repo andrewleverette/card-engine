@@ -11,7 +11,7 @@
     :rule/desc "Moves game to the initial deal phase."
     :rule/type :apply
     :rule/action {:action/type :transition-phase
-                  :action/params {:next-phase :initial-deal}}}]
+                  :action/params {:phase :initial-deal}}}]
 
   :initial-deal
   [{:rule/id :deal-two-cards-to-all-players
@@ -27,7 +27,7 @@
     :rule/desc "Moves game to the scoring phase."
     :rule/type :apply
     :rule/action {:action/type :transition-phase
-                  :action/params {:next-phase :player-turn-start}}}]
+                  :action/params {:phase :player-turn-start}}}]
 
   :player-turn-start
   [{:rule/id :set-current-player
@@ -39,7 +39,7 @@
     :rule/desc "Transitions to the player's turn phase"
     :rule/type :apply
     :rule/action {:action/type :transition-phase
-                  :action/params {:next-phase :player-turn}}}]
+                  :action/params {:phase :player-turn}}}]
   :player-turn
   [{:rule/id :evaluate-player-hand
     :rule/desc "Evaluates the player's hand."
@@ -67,7 +67,7 @@
     :rule/condition {:condition/type :player-status-in-set?
                      :condition/params {:set #{:done}}}
     :rule/action {:action/type :transition-phase
-                  :action/params {:next-phase :player-turn-end}}}]
+                  :action/params {:phase :player-turn-end}}}]
 
   :player-turn-end
   [{:rule/id :move-to-next-player-or-scoring-phase
@@ -76,22 +76,33 @@
     :rule/condition {:condition/type :all-players-status-in-set?
                      :condition/params {:set #{:done}}}
     :rule/action {:action/type :transition-phase
-                  :action/params {:next-phase :round-end}}
+                  :action/params {:phase :round-end}}
     :rule/else {:rule/action {:action/type :transition-phase
-                              :action/params {:next-phase :player-turn-start}}}}]
+                              :action/params {:phase :player-turn-start}}}}]
+
+  :results
+  [{:rule/id :determine-results
+    :rule/desc "Compares each player's hand to the dealer's and updates player status."
+    :rule/type :apply
+    :rule/action {:action/type :calculate-results}}
+
+   {:rule/id :transition-to-round-end
+    :rule/desc "Moves the game to the round-end phase."
+    :rule/type :apply
+    :rule/action {:action/type :transition-phase
+                  :action/params {:phase :round-end}}}]
 
   :round-end
   [{:rule/id :collect-cards-and-reset
     :rule/desc "Collects cards from all players and the dealer and resets the game."
     :rule/type :apply
-    :rule/action {:action/type :card-management
-                  :action/params {:action :collect-cards}}}
+    :rule/action {:action/type :reset-game}}
 
    {:rule/id :transition-to-end-game
     :rule/desc "Moves game to the end game phase."
     :rule/type :apply
     :rule/action {:action/type :transition-phase
-                  :action/params {:next-phase :end-game}}}]
+                  :action/params {:phase :end-game}}}]
 
   :end-game
   [{:rule/id :set-game-over-status

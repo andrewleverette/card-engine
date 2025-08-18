@@ -2,10 +2,10 @@
 
  :ruleset/phases
  {:setup
-  [{:rule/id :transition-game-status-to-in-progress
+  [{:rule/id :transition-status-to-in-progress
     :rule/desc "Sets the game status to :in-progress."
     :rule/type :apply
-    :rule/action {:action/type :transition-game-status}}
+    :rule/action {:action/type :transition-status}}
 
    {:rule/id :transition-to-initial-deal-phase
     :rule/desc "Moves game to the initial deal phase."
@@ -210,10 +210,11 @@
     :rule/desc "Prepares for the next round by transitioning to the initial deal phase."
     :rule/type :apply
     :rule/action {:action/type :transition-phase
-                  :action/params {:phase :game-over}}}
+                  :action/params {:phase :game-over}}}]
 
-   {:rule/id :transition-to-game-over-status
+  :game-over
+  [{:rule/id :transition-to-game-over-status
     :rule/desc "Updates the game status."
     :rule/type :apply
-    :rule/action {:action/type :transition-game-status
+    :rule/action {:action/type :transition-status
                   :action/params {:status :game-over}}}]}}

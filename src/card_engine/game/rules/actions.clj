@@ -3,7 +3,7 @@
 
 (ns card-engine.game.rules.actions
   "This namespace defines the functions that apply the actions of rules to the game state and
-  moves the game state forward.
+  returns the modifications that should be applied to the game state.
   
   This is provided by a multimethod that dispatches on the rule's action-type."
   (:require
@@ -27,8 +27,7 @@
 
 (defmulti apply-action
   "Applies the given action to the game state and
-  returns the new game-state. If no dispatcher is found, 
-  returns the game-state unchanged.
+  returns the corresponding actions to be be applied to the current state. 
   
   Args:
   * game-state: The current game state
@@ -36,7 +35,7 @@
   
   Dispatchers:
   * :deal - Deals the given number of cards to the given target from the given source.
-  * :transition-game-status - Sets the game status to the given status.
+  * :transition-status - Sets the game status to the given status.
   * :transition-phase - Sets the game phase to the given phase.
   * :transition-player - Sets the current player to the next player.
   * :card-management - Resets the deck state and player state"
@@ -47,7 +46,7 @@
   (let [params (action-params rule)]
     (deal-action game-state params)))
 
-(defmethod apply-action :transition-game-status
+(defmethod apply-action :transition-status
   [_ rule]
   (let [params (action-params rule)]
     [[:state/assoc :game/status (:status params)]]))
@@ -83,12 +82,9 @@
     [[:state/assoc :game/current-player-id (player/id dealer)]]))
 
 (defmethod apply-action :get-player-action
-  ;; TODO: This needs some work. I'm not entirely sure how to handle strategy yet
   [game-state _]
-  (let [p (state/current-player game-state)
-        action (strategy/get-player-action game-state p)
-        p' (player/set-action p action)]
-    [[:state/assoc-in [:game/players (player/id p)] p']]))
+  (let [p (state/current-player game-state)]
+    (strategy/get-player-action game-state p)))
 
 (defmethod apply-action :update-player-status
   [game-state rule]
@@ -120,9 +116,9 @@
         game-type (state/game-type game-state)
         hand (player/hand p)
         score-result (score-hand game-type hand)]
-    (if (= :game/handle-error (ffirst score-result))
-      score-result
-      [[:state/assoc-in [:game/players (player/id p)] (player/set-score p score-result)]])))
+    (if (number? score-result)
+      [[:state/assoc-in [:game/players (player/id p)] (player/set-score p score-result)]]
+      score-result)))
 
 (defmethod apply-action :score-dealer-hand
   [game-state _]

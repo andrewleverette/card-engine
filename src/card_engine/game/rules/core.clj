@@ -43,14 +43,6 @@
   [rule]
   (:rule/type rule))
 
-(defn condition
-  [rule]
-  (:rule/condition rule))
-
-(defn action
-  [rule]
-  (:rule/action rule))
-
 (defmulti apply-rule
   (fn [_ rule] (rule-type rule)))
 
@@ -87,15 +79,3 @@
                         :errors [{:type :unknown-rule-type
                                   :message "Unknown rule type"
                                   :value (rule-type rule)}]}]])
-
-(defn apply-ruleset
-  "Applies the rules in the given ruleset to the game state."
-  [game-state ruleset]
-  (let [phase (state/phase game-state)
-        rules (get-in ruleset [:ruleset/phases phase])]
-    (if (seq rules)
-      (reduce apply-rule game-state rules)
-      (throw (ex-info "Failed to apply ruleset" {:type :apply-ruleset
-                                                 :errors [{:type :no-rules-for-phase
-                                                           :value phase
-                                                           :message "No rules found for phase"}]})))))
