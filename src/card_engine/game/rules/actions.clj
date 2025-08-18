@@ -38,7 +38,13 @@
   * :transition-status - Sets the game status to the given status.
   * :transition-phase - Sets the game phase to the given phase.
   * :transition-player - Sets the current player to the next player.
-  * :card-management - Resets the deck state and player state"
+  * :transition-dealer - Sets the current player to the dealer.
+  * :get-player-action - Gets the player action for the current player.
+  * :update-player-status - Updates the player status to the given status.
+  * :reset-game - Resets the deck state and player state
+  * :score-player-hand - Scores the current player's hand and updates the player's score.
+  * :score-dealer-hand - Scores the dealer's hand and updates the dealer's score.
+  * :calculate-results - Calculates the game results and updates the game state."
   (fn [_ rule] (action-type rule)))
 
 (defmethod apply-action :deal
